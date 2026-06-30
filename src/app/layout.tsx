@@ -8,8 +8,9 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Tranquil — Anti-FOMO Dashboard",
-  description: "A calmer, more intentional relationship with your digital life.",
+  title: "Anti-FOMO — Gaming Insights",
+  description:
+    "Evidence-based insights into game design patterns. Know what you're playing.",
 };
 
 export default function RootLayout({
