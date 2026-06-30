@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import DailyIntention from "@/components/DailyIntention";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import BreathingExercise from "@/components/BreathingExercise";
+import FocusTimeline from "@/components/FocusTimeline";
 
 export default function SessionPage() {
   return (
@@ -51,6 +52,9 @@ export default function SessionPage() {
           <PomodoroTimer />
           <BreathingExercise />
         </div>
+
+        {/* Focus Timeline */}
+        <FocusTimeline />
 
         {/* Tips */}
         <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
