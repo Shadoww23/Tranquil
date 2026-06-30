@@ -58,14 +58,21 @@ describe("detectHabitPatterns", () => {
     expect(energy?.severity).toBe("high");
   });
 
-  it("detects gacha loop from loot boxes", () => {
-    const game: Game = {
+  it("detects loot boxes separately from gacha loop", () => {
+    const lootGame: Game = {
       ...baseGame,
       mechanics: { ...baseGame.mechanics, hasLootBoxes: true },
     };
-    const result = detectHabitPatterns(game);
-    const patterns = result.map((p) => p.pattern);
-    expect(patterns).toContain("Gacha Loop");
+    const gachaGame: Game = {
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, hasGacha: true },
+    };
+    const lootPatterns = detectHabitPatterns(lootGame).map((p) => p.pattern);
+    const gachaPatterns = detectHabitPatterns(gachaGame).map((p) => p.pattern);
+    expect(lootPatterns).toContain("Loot Boxes");
+    expect(lootPatterns).not.toContain("Gacha Loop");
+    expect(gachaPatterns).toContain("Gacha Loop");
+    expect(gachaPatterns).not.toContain("Loot Boxes");
   });
 
   it("escalates FOMO severity when microtransactions are present", () => {

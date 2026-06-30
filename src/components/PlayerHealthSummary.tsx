@@ -8,7 +8,7 @@ export default function PlayerHealthSummary({ games }: Props) {
   const avgJoy = Math.round(
     games.reduce((s, g) => s + g.joyIndex.total, 0) / games.length
   );
-  const predatoryCount = games.filter((g) => g.predatoryScore.total > 35).length;
+  const riskCount = games.filter((g) => g.designRiskScore.total > 35).length;
   const totalHours = games.reduce((s, g) => s + g.hoursPlayed, 0);
   const topGame = [...games].sort((a, b) => b.hoursPlayed - a.hoursPlayed)[0];
 
@@ -32,7 +32,7 @@ export default function PlayerHealthSummary({ games }: Props) {
             {games.length} games analyzed
           </h1>
           <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">
-            {predatoryCount} with predatory mechanics &middot;{" "}
+            {riskCount} with elevated risk &middot;{" "}
             {totalHours.toLocaleString()} hours played total
           </p>
         </div>
@@ -41,12 +41,14 @@ export default function PlayerHealthSummary({ games }: Props) {
           <div className="bg-white/70 dark:bg-stone-800/50 rounded-xl p-3 border border-white/50 dark:border-stone-700/50">
             <p className="text-xs text-stone-400 dark:text-stone-500">Avg Joy Index</p>
             <p className={`text-xl font-bold mt-0.5 ${joyColor}`}>{avgJoy}</p>
-            <p className="text-xs text-stone-400 dark:text-stone-500">{games[0]?.joyIndex.label}</p>
+            <p className="text-xs text-stone-400 dark:text-stone-500">
+              {avgJoy >= 75 ? "Excellent" : avgJoy >= 50 ? "Good" : avgJoy >= 25 ? "Fair" : "Poor"}
+            </p>
           </div>
           <div className="bg-white/70 dark:bg-stone-800/50 rounded-xl p-3 border border-white/50 dark:border-stone-700/50">
             <p className="text-xs text-stone-400 dark:text-stone-500">Clean Games</p>
             <p className="text-xl font-bold mt-0.5 text-emerald-600 dark:text-emerald-400">
-              {games.length - predatoryCount}
+              {games.length - riskCount}
             </p>
             <p className="text-xs text-stone-400 dark:text-stone-500">no red flags</p>
           </div>

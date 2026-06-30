@@ -1,11 +1,12 @@
 import { mockGameLibrary } from "@/lib/data";
 import {
-  calculatePredatoryScore,
+  calculateDesignRiskScore,
   calculateJoyIndex,
   detectHabitPatterns,
   generateRecommendation,
 } from "@/lib/engines";
 import type { AnalyzedGame } from "@/lib/types";
+import Link from "next/link";
 import Header from "@/components/Header";
 import PlayerHealthSummary from "@/components/PlayerHealthSummary";
 import GameLibrary from "@/components/GameLibrary";
@@ -13,19 +14,19 @@ import StatCard from "@/components/StatCard";
 
 function analyzeLibrary(): AnalyzedGame[] {
   return mockGameLibrary.map((game) => {
-    const predatoryScore = calculatePredatoryScore(game);
-    const joyIndex = calculateJoyIndex(game, predatoryScore);
+    const designRiskScore = calculateDesignRiskScore(game);
+    const joyIndex = calculateJoyIndex(game, designRiskScore);
     const detectedPatterns = detectHabitPatterns(game);
-    const recommendation = generateRecommendation(predatoryScore, joyIndex);
-    return { ...game, predatoryScore, joyIndex, detectedPatterns, recommendation };
+    const recommendation = generateRecommendation(designRiskScore, joyIndex);
+    return { ...game, designRiskScore, joyIndex, detectedPatterns, recommendation };
   });
 }
 
 export default function Home() {
   const games = analyzeLibrary();
 
-  const avgPredatory = Math.round(
-    games.reduce((s, g) => s + g.predatoryScore.total, 0) / games.length
+  const avgRisk = Math.round(
+    games.reduce((s, g) => s + g.designRiskScore.total, 0) / games.length
   );
   const avgJoy = Math.round(
     games.reduce((s, g) => s + g.joyIndex.total, 0) / games.length
@@ -42,8 +43,8 @@ export default function Home() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
-            label="Avg Predatory Score"
-            value={`${avgPredatory}/100`}
+            label="Avg Design Risk Score"
+            value={`${avgRisk}/100`}
             sub="Lower is better"
             accent="bg-rose-50 dark:bg-rose-950/40"
             icon={
@@ -86,6 +87,38 @@ export default function Home() {
               </svg>
             }
           />
+        </div>
+
+        {/* Score methodology explainer */}
+        <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-3">
+            How scores work
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1">Design Risk Score</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                0–100. A weighted count of concern patterns: gacha, pay-to-win, and loot boxes carry the most weight.
+                Lower is better.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-violet-600 dark:text-violet-400 mb-1">Joy Index</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                0–100. Community satisfaction (80%) minus a design risk penalty. A beloved game with aggressive
+                monetisation still scores lower than a clean one. Higher is better.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1">Verdict</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                Healthy · Mindful · Caution · Red Flag — derived from both scores together.{" "}
+                <Link href="/patterns" className="text-violet-500 hover:text-violet-700 dark:hover:text-violet-300 underline transition-colors">
+                  Learn about each pattern →
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
 
         <GameLibrary games={games} />

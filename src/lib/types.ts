@@ -54,9 +54,9 @@ export type HabitPattern =
   | "Energy System"
   | "FOMO Pressure"
   | "Gacha Loop"
+  | "Loot Boxes"
   | "Pay-to-Progress"
-  | "Social Obligation"
-  | "Variable Reward Schedule";
+  | "Social Obligation";
 
 export interface DetectedPattern {
   pattern: HabitPattern;

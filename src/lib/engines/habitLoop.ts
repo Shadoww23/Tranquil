@@ -31,12 +31,21 @@ export function detectHabitPatterns(game: Game): DetectedPattern[] {
     });
   }
 
-  if (mechanics.hasGacha || mechanics.hasLootBoxes) {
+  if (mechanics.hasGacha) {
     patterns.push({
       pattern: "Gacha Loop",
       severity: "high",
       description:
         "Variable reward schedules exploit gambling psychology to keep players spending.",
+    });
+  }
+
+  if (mechanics.hasLootBoxes) {
+    patterns.push({
+      pattern: "Loot Boxes",
+      severity: "high",
+      description:
+        "Randomised paid containers drive spending through unpredictable rewards and rarity anxiety.",
     });
   }
 

@@ -1,7 +1,7 @@
 import type { DesignRiskScore } from "@/lib/types";
 
-// Theoretical maximums per subcategory (from engine weights)
-const MAX = { monetization: 80, manipulation: 23, compulsion: 22 } as const;
+// Theoretical maximums per subcategory (gacha+lootBoxes+p2w+battlePass+seasonPass+mtx+ads+maxDlc = 88)
+const MAX = { monetization: 88, manipulation: 23, compulsion: 22 } as const;
 
 const categories = [
   { key: "monetization" as const, label: "Monetization", bar: "bg-rose-400 dark:bg-rose-500", text: "text-rose-600 dark:text-rose-400" },
