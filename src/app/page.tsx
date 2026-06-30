@@ -11,6 +11,7 @@ import Header from "@/components/Header";
 import PlayerHealthSummary from "@/components/PlayerHealthSummary";
 import GameLibrary from "@/components/GameLibrary";
 import StatCard from "@/components/StatCard";
+import WhatYouDidntMiss from "@/components/WhatYouDidntMiss";
 
 function analyzeLibrary(): AnalyzedGame[] {
   return mockGameLibrary.map((game) => {
@@ -120,6 +121,8 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        <WhatYouDidntMiss />
 
         <GameLibrary games={games} />
       </main>

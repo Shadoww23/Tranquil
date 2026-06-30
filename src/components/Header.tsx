@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/", label: "Library" },
   { href: "/patterns", label: "Patterns" },
   { href: "/platforms", label: "Platforms" },
+  { href: "/session", label: "Session" },
 ] as const;
 
 export default function Header() {
@@ -158,7 +159,7 @@ export default function Header() {
               rel="noopener noreferrer"
               className="text-sm px-3 py-2.5 rounded-lg text-stone-400 dark:text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
             >
-              GitHub &rarr;
+              GitHub →
             </a>
           </div>
         </nav>
