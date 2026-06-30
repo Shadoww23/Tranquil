@@ -25,7 +25,7 @@ export function detectHabitPatterns(game: Game): DetectedPattern[] {
   if (mechanics.hasLimitedTimeEvents) {
     patterns.push({
       pattern: "FOMO Pressure",
-      severity: mechanics.hasMicrotransactions ? "high" : "low",
+      severity: mechanics.hasMicrotransactions ? "high" : "medium",
       description:
         "Time-limited content creates fear of missing out, driving compulsive engagement.",
     });

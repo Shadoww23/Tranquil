@@ -91,7 +91,7 @@ describe("detectHabitPatterns", () => {
     const highResult = detectHabitPatterns(highFomo).find((p) => p.pattern === "FOMO Pressure");
     const lowResult = detectHabitPatterns(lowFomo).find((p) => p.pattern === "FOMO Pressure");
     expect(highResult?.severity).toBe("high");
-    expect(lowResult?.severity).toBe("low");
+    expect(lowResult?.severity).toBe("medium");
   });
 
   it("detects pay-to-progress when pay-to-win is enabled", () => {

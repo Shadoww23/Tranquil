@@ -62,7 +62,7 @@ export default function GameLibrary({ games }: Props) {
     });
   }, [games, sort, filter, platform, search]);
 
-  const isFiltered = search.trim() || filter !== "all" || platform !== "all";
+  const isFiltered = !!search.trim() || filter !== "all" || platform !== "all";
 
   return (
     <section aria-label="Game library">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { AnalyzedGame } from "@/lib/types";
+import { joyColor, riskBarColor } from "@/lib/colorUtils";
 import PatternBadge from "./PatternBadge";
 
 const platformStyles: Record<AnalyzedGame["platform"], string> = {
@@ -20,20 +21,6 @@ const verdictStyles: Record<AnalyzedGame["recommendation"]["verdict"], string> =
   "red-flag":
     "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
 };
-
-function riskBarColor(score: number): string {
-  if (score <= 15) return "bg-emerald-400";
-  if (score <= 40) return "bg-yellow-400";
-  if (score <= 65) return "bg-orange-400";
-  return "bg-red-500";
-}
-
-function joyColor(score: number): string {
-  if (score >= 70) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 50) return "text-blue-600 dark:text-blue-400";
-  if (score >= 25) return "text-amber-600 dark:text-amber-400";
-  return "text-red-500 dark:text-red-400";
-}
 
 interface Props {
   game: AnalyzedGame;

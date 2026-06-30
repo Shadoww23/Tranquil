@@ -1,3 +1,5 @@
+import type { GameMechanics } from "./types";
+
 export interface PatternDefinition {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export interface PatternDefinition {
   description: string;
   howToIdentify: string;
   researchContext: string;
-  mechanicsKey: string;
+  mechanicsKey: keyof GameMechanics;
 }
 
 export const PATTERN_REGISTRY: PatternDefinition[] = [

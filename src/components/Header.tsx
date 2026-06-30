@@ -24,7 +24,7 @@ export default function Header() {
   }, [pathname]);
 
   const toggleDark = () => {
-    const next = !isDark;
+    const next = !document.documentElement.classList.contains("dark");
     setIsDark(next);
     document.documentElement.classList.toggle("dark", next);
     try {
@@ -157,7 +157,7 @@ export default function Header() {
               rel="noopener noreferrer"
               className="text-sm px-3 py-2.5 rounded-lg text-stone-400 dark:text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
             >
-              GitHub →
+              GitHub &rarr;
             </a>
           </div>
         </nav>

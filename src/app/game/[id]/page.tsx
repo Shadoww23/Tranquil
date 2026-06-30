@@ -7,6 +7,7 @@ import {
   detectHabitPatterns,
   generateRecommendation,
 } from "@/lib/engines";
+import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
 import Header from "@/components/Header";
@@ -24,20 +25,6 @@ const verdictLabel = {
   caution: "Caution",
   "red-flag": "Red Flag",
 } as const;
-
-function joyColor(score: number) {
-  if (score >= 70) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 50) return "text-blue-600 dark:text-blue-400";
-  if (score >= 25) return "text-amber-600 dark:text-amber-400";
-  return "text-red-500 dark:text-red-400";
-}
-
-function riskColor(score: number) {
-  if (score <= 15) return "text-emerald-600 dark:text-emerald-400";
-  if (score <= 40) return "text-amber-600 dark:text-amber-400";
-  if (score <= 65) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
-}
 
 interface Props {
   params: Promise<{ id: string }>;

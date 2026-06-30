@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PATTERN_REGISTRY } from "@/lib/patterns";
+import type { GameMechanics } from "@/lib/types";
 import { mockGameLibrary } from "@/lib/data";
 import Header from "@/components/Header";
 
@@ -27,10 +28,8 @@ const severityStyles = {
   high: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400",
 } as const;
 
-function countGamesWithPattern(mechanicsKey: string): number {
-  return mockGameLibrary.filter(
-    (g) => g.mechanics[mechanicsKey as keyof typeof g.mechanics]
-  ).length;
+function countGamesWithPattern(mechanicsKey: keyof GameMechanics): number {
+  return mockGameLibrary.filter((g) => !!g.mechanics[mechanicsKey]).length;
 }
 
 export default function PatternsPage() {

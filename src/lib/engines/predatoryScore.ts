@@ -1,7 +1,7 @@
 import type { Game, DesignRiskScore } from "../types";
 
 // Weights chosen to produce a 0-100 score where 100 = maximum design risk.
-// Maximum possible without capping: 20+15+20+10+5+5 + 15+8 + 15+7+5 = 125
+// Maximum possible without capping: monetization(20+15+20+10+5+5+8+5=88) + manipulation(15+8=23) + compulsion(15+7=22) = 133
 const W = {
   gacha: 20,
   lootBoxes: 15,
