@@ -3,7 +3,9 @@ import StatCard from "@/components/StatCard";
 import ScreenTimeChart from "@/components/ScreenTimeChart";
 import AppUsageList from "@/components/AppUsageList";
 import WhatYouDidntMiss from "@/components/WhatYouDidntMiss";
-import FocusTimeline from "@/components/FocusTimeline";
+import PomodoroTimer from "@/components/PomodoroTimer";
+import BreathingExercise from "@/components/BreathingExercise";
+import DailyIntention from "@/components/DailyIntention";
 import { dailyStats } from "@/lib/data";
 
 export default function Home() {
@@ -13,20 +15,17 @@ export default function Home() {
     day: "numeric",
   });
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-stone-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-emerald-400 flex items-center justify-center">
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z"
-                  stroke="white"
-                  strokeWidth="2"
-                  fill="none"
-                />
+                <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="white" strokeWidth="2" fill="none" />
                 <path d="M12 7v5l3 3" stroke="white" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </div>
@@ -42,25 +41,19 @@ export default function Home() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Hero section */}
+        {/* Hero */}
         <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-6">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <CalmScoreRing score={dailyStats.calmScore} />
-            <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-semibold text-stone-800">
-                Good{" "}
-                {new Date().getHours() < 12
-                  ? "morning"
-                  : new Date().getHours() < 17
-                  ? "afternoon"
-                  : "evening"}
-                .
-              </h1>
-              <p className="text-stone-500 mt-1 text-sm max-w-sm">
-                You&apos;ve been intentional today. {dailyStats.screenFreeHours}h screen-free and{" "}
-                {dailyStats.focusSessions} deep focus sessions completed.
-              </p>
-              <div className="mt-4 inline-flex items-center gap-2 bg-white border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm">
+            <div className="flex-1 flex flex-col gap-3 text-center sm:text-left w-full">
+              <div>
+                <h1 className="text-2xl font-semibold text-stone-800">Good {greeting}.</h1>
+                <p className="text-stone-500 mt-1 text-sm max-w-sm">
+                  {dailyStats.screenFreeHours}h screen-free and {dailyStats.focusSessions} focus sessions today.
+                </p>
+              </div>
+              <DailyIntention />
+              <div className="inline-flex items-center gap-2 bg-white border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm self-center sm:self-start">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 FOMO Risk: Low ({dailyStats.fomoScore}%)
               </div>
@@ -117,17 +110,20 @@ export default function Home() {
           />
         </div>
 
-        {/* Middle row */}
+        {/* Timer + Breathing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <PomodoroTimer />
+          <BreathingExercise />
+        </div>
+
+        {/* Screen time + App usage */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <ScreenTimeChart />
           <AppUsageList />
         </div>
 
-        {/* Bottom row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <WhatYouDidntMiss />
-          <FocusTimeline />
-        </div>
+        {/* What you didn't miss */}
+        <WhatYouDidntMiss />
       </main>
 
       <footer className="text-center text-xs text-stone-300 pb-8 pt-4">
