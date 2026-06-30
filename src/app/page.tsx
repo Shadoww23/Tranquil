@@ -6,6 +6,7 @@ import WhatYouDidntMiss from "@/components/WhatYouDidntMiss";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import BreathingExercise from "@/components/BreathingExercise";
 import DailyIntention from "@/components/DailyIntention";
+import Header from "@/components/Header";
 import { dailyStats } from "@/lib/data";
 
 export default function Home() {
@@ -20,25 +21,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-stone-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-400 flex items-center justify-center">
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="white" strokeWidth="2" fill="none" />
-                <path d="M12 7v5l3 3" stroke="white" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="font-semibold text-stone-800 text-lg tracking-tight">Tranquil</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-stone-400 hidden sm:block">{date}</span>
-            <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-semibold text-stone-500">
-              Y
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header date={date} />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Hero */}

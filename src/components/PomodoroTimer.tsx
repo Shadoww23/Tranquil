@@ -16,6 +16,32 @@ const COLOR: Record<Mode, { ring: string; btn: string; badge: string }> = {
   longBreak: { ring: "#a78bfa", btn: "bg-violet-500 hover:bg-violet-600", badge: "bg-violet-50 text-violet-700" },
 };
 
+function playChime() {
+  try {
+    const ctx = new AudioContext();
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.18;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+      osc.start(t);
+      osc.stop(t + 0.6);
+    });
+  } catch {}
+}
+
+function sendNotification(body: string) {
+  playChime();
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+    new Notification("Tranquil", { body, silent: true });
+  }
+}
+
 export default function PomodoroTimer() {
   const [mode, setMode] = useState<Mode>("focus");
   const [secondsLeft, setSecondsLeft] = useState(MODES.focus.minutes * 60);
@@ -34,13 +60,25 @@ export default function PomodoroTimer() {
     setSecondsLeft(MODES[m].minutes * 60);
   };
 
+  const handleStart = () => {
+    if (!running && typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    setRunning((r) => !r);
+  };
+
   useEffect(() => {
     if (!running) return;
     const id = setInterval(() => {
       setSecondsLeft((s) => {
         if (s <= 1) {
           setRunning(false);
-          if (mode === "focus") setSessions((n) => n + 1);
+          if (mode === "focus") {
+            setSessions((n) => n + 1);
+            sendNotification("Focus session complete! Time for a break.");
+          } else {
+            sendNotification("Break over — ready to focus again?");
+          }
           return MODES[mode].minutes * 60;
         }
         return s - 1;
@@ -100,7 +138,7 @@ export default function PomodoroTimer() {
 
       <div className="flex gap-2">
         <button
-          onClick={() => setRunning((r) => !r)}
+          onClick={handleStart}
           className={`flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${c.btn}`}
         >
           {running ? "Pause" : atStart ? "Start" : "Resume"}
