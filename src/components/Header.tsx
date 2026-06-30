@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
@@ -36,15 +39,34 @@ export default function Header() {
               />
             </svg>
           </div>
-          <div>
+          <Link href="/" className="flex items-center gap-1">
             <span className="font-semibold text-stone-800 dark:text-stone-100 text-lg tracking-tight">
               Anti-FOMO
             </span>
-            <span className="hidden sm:inline text-xs text-stone-400 dark:text-stone-500 ml-2">
+            <span className="hidden sm:inline text-xs text-stone-400 dark:text-stone-500 ml-1">
               Gaming Insights
             </span>
-          </div>
+          </Link>
         </div>
+
+        <nav className="hidden sm:flex items-center gap-1">
+          {[
+            { href: "/", label: "Library" },
+            { href: "/patterns", label: "Patterns" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                pathname === href
+                  ? "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 font-medium"
+                  : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
 
         <div className="flex items-center gap-2">
           <a

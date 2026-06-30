@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { AnalyzedGame } from "@/lib/types";
 import PatternBadge from "./PatternBadge";
 
@@ -20,7 +21,7 @@ const verdictStyles: Record<AnalyzedGame["recommendation"]["verdict"], string> =
     "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
 };
 
-function predatoryBarColor(score: number): string {
+function riskBarColor(score: number): string {
   if (score <= 15) return "bg-emerald-400";
   if (score <= 40) return "bg-yellow-400";
   if (score <= 65) return "bg-orange-400";
@@ -39,12 +40,15 @@ interface Props {
 }
 
 export default function GameCard({ game }: Props) {
-  const { predatoryScore, joyIndex, detectedPatterns, recommendation } = game;
+  const { designRiskScore, joyIndex, detectedPatterns, recommendation } = game;
   const visiblePatterns = detectedPatterns.slice(0, 3);
   const hiddenCount = detectedPatterns.length - visiblePatterns.length;
 
   return (
-    <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-4 flex flex-col gap-3">
+    <Link
+      href={`/game/${game.id}`}
+      className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-4 flex flex-col gap-3 hover:border-violet-200 dark:hover:border-violet-800 hover:shadow-md transition-all group"
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -73,25 +77,25 @@ export default function GameCard({ game }: Props) {
         played
       </p>
 
-      {/* Predatory Score */}
+      {/* Design Risk Score */}
       <div>
         <div className="flex items-center justify-between text-xs mb-1">
-          <span className="text-stone-500 dark:text-stone-400">Predatory Score</span>
+          <span className="text-stone-500 dark:text-stone-400">Design Risk Score</span>
           <span className="font-semibold text-stone-700 dark:text-stone-200">
-            {predatoryScore.total}/100
+            {designRiskScore.total}/100
           </span>
         </div>
         <div
           className="h-1.5 rounded-full bg-stone-100 dark:bg-stone-700 overflow-hidden"
           role="progressbar"
-          aria-valuenow={predatoryScore.total}
+          aria-valuenow={designRiskScore.total}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={`Predatory score: ${predatoryScore.total} out of 100`}
+          aria-label={`Design risk score: ${designRiskScore.total} out of 100`}
         >
           <div
-            className={`h-full rounded-full ${predatoryBarColor(predatoryScore.total)}`}
-            style={{ width: `${predatoryScore.total}%` }}
+            className={`h-full rounded-full ${riskBarColor(designRiskScore.total)}`}
+            style={{ width: `${designRiskScore.total}%` }}
           />
         </div>
       </div>
@@ -122,6 +126,6 @@ export default function GameCard({ game }: Props) {
       <div className={`rounded-xl border p-2.5 mt-auto ${verdictStyles[recommendation.verdict]}`}>
         <p className="text-xs font-semibold">{recommendation.headline}</p>
       </div>
-    </div>
+    </Link>
   );
 }

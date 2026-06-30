@@ -27,6 +27,7 @@ const baseGame: Game = {
     hasPayToWin: false,
     hasGacha: false,
     hasSocialPressure: false,
+    hasAds: false,
   },
 };
 

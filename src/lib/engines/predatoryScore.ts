@@ -1,6 +1,6 @@
-import type { Game, PredatoryScore } from "../types";
+import type { Game, DesignRiskScore } from "../types";
 
-// Weights chosen to produce a 0-100 score where 100 = maximally predatory.
+// Weights chosen to produce a 0-100 score where 100 = maximum design risk.
 // Maximum possible without capping: 20+15+20+10+5+5 + 15+8 + 15+7+5 = 125
 const W = {
   gacha: 20,
@@ -9,6 +9,7 @@ const W = {
   battlePass: 10,
   seasonPass: 5,
   microtransactions: 5,
+  ads: 8,
   limitedTimeEvents: 15,
   socialPressure: 8,
   energySystem: 15,
@@ -17,7 +18,7 @@ const W = {
   maxDlcPoints: 5,
 } as const;
 
-export function calculatePredatoryScore(game: Game): PredatoryScore {
+export function calculateDesignRiskScore(game: Game): DesignRiskScore {
   const { mechanics } = game;
   const flags: string[] = [];
 
@@ -31,6 +32,7 @@ export function calculatePredatoryScore(game: Game): PredatoryScore {
   if (mechanics.hasBattlePass) { monetization += W.battlePass; flags.push("Battle Pass"); }
   if (mechanics.hasSeasonPass) { monetization += W.seasonPass; flags.push("Season Pass"); }
   if (mechanics.hasMicrotransactions) { monetization += W.microtransactions; flags.push("Microtransactions"); }
+  if (mechanics.hasAds) { monetization += W.ads; flags.push("In-Game Ads"); }
   monetization += Math.min(mechanics.dlcCount * W.dlcPerTitle, W.maxDlcPoints);
 
   if (mechanics.hasLimitedTimeEvents) { manipulation += W.limitedTimeEvents; flags.push("FOMO Events"); }

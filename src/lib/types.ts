@@ -10,6 +10,7 @@ export interface GameMechanics {
   hasPayToWin: boolean;
   hasGacha: boolean;
   hasSocialPressure: boolean;
+  hasAds: boolean;
 }
 
 export interface Game {
@@ -26,9 +27,12 @@ export interface Game {
   coverColor: string;
   mechanics: GameMechanics;
   communityScore: number;
+  ageRating?: string;
+  requiresOnline?: boolean;
+  estimatedHoursToComplete?: number;
 }
 
-export interface PredatoryScore {
+export interface DesignRiskScore {
   total: number;
   breakdown: {
     monetization: number;
@@ -70,7 +74,7 @@ export interface Recommendation {
 }
 
 export interface AnalyzedGame extends Game {
-  predatoryScore: PredatoryScore;
+  designRiskScore: DesignRiskScore;
   joyIndex: JoyIndex;
   detectedPatterns: DetectedPattern[];
   recommendation: Recommendation;

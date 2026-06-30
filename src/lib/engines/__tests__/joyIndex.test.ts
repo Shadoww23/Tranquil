@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { calculateJoyIndex } from "../joyIndex";
-import { calculatePredatoryScore } from "../predatoryScore";
+import { calculateDesignRiskScore } from "../predatoryScore";
 import type { Game } from "../../types";
 
 const cleanMechanics = {
@@ -15,6 +15,7 @@ const cleanMechanics = {
   hasPayToWin: false,
   hasGacha: false,
   hasSocialPressure: false,
+  hasAds: false,
 };
 
 const makeGame = (communityScore: number, overrides = {}): Game => ({
@@ -36,26 +37,26 @@ const makeGame = (communityScore: number, overrides = {}): Game => ({
 describe("calculateJoyIndex", () => {
   it("gives Excellent rating for a clean, highly-rated game", () => {
     const game = makeGame(98);
-    const predatory = calculatePredatoryScore(game);
-    const joy = calculateJoyIndex(game, predatory);
+    const risk = calculateDesignRiskScore(game);
+    const joy = calculateJoyIndex(game, risk);
     expect(joy.total).toBeGreaterThanOrEqual(75);
     expect(joy.label).toBe("Excellent");
   });
 
-  it("reduces joy when predatory score is high", () => {
+  it("reduces joy when design risk score is high", () => {
     const cleanGame = makeGame(80);
-    const predatoryGame = makeGame(80, {
+    const riskyGame = makeGame(80, {
       hasGacha: true,
       hasPayToWin: true,
       hasEnergySystem: true,
       hasDailyLoginBonus: true,
       hasLimitedTimeEvents: true,
     });
-    const cleanPredatory = calculatePredatoryScore(cleanGame);
-    const dirtyPredatory = calculatePredatoryScore(predatoryGame);
-    const cleanJoy = calculateJoyIndex(cleanGame, cleanPredatory);
-    const dirtyJoy = calculateJoyIndex(predatoryGame, dirtyPredatory);
-    expect(dirtyJoy.total).toBeLessThan(cleanJoy.total);
+    const cleanRisk = calculateDesignRiskScore(cleanGame);
+    const highRisk = calculateDesignRiskScore(riskyGame);
+    const cleanJoy = calculateJoyIndex(cleanGame, cleanRisk);
+    const riskyJoy = calculateJoyIndex(riskyGame, highRisk);
+    expect(riskyJoy.total).toBeLessThan(cleanJoy.total);
   });
 
   it("never goes below 0", () => {
@@ -69,15 +70,15 @@ describe("calculateJoyIndex", () => {
       hasLimitedTimeEvents: true,
       hasSocialPressure: true,
     });
-    const predatory = calculatePredatoryScore(game);
-    const joy = calculateJoyIndex(game, predatory);
+    const risk = calculateDesignRiskScore(game);
+    const joy = calculateJoyIndex(game, risk);
     expect(joy.total).toBeGreaterThanOrEqual(0);
   });
 
   it("labels Poor when total is below 25", () => {
     const game = makeGame(15, { hasGacha: true, hasPayToWin: true });
-    const predatory = calculatePredatoryScore(game);
-    const joy = calculateJoyIndex(game, predatory);
+    const risk = calculateDesignRiskScore(game);
+    const joy = calculateJoyIndex(game, risk);
     expect(joy.label).toBe("Poor");
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculatePredatoryScore } from "../predatoryScore";
+import { calculateDesignRiskScore } from "../predatoryScore";
 import type { Game } from "../../types";
 
 const baseGame: Game = {
@@ -27,12 +27,13 @@ const baseGame: Game = {
     hasPayToWin: false,
     hasGacha: false,
     hasSocialPressure: false,
+    hasAds: false,
   },
 };
 
-describe("calculatePredatoryScore", () => {
+describe("calculateDesignRiskScore", () => {
   it("returns 0 for a completely clean game", () => {
-    const result = calculatePredatoryScore(baseGame);
+    const result = calculateDesignRiskScore(baseGame);
     expect(result.total).toBe(0);
     expect(result.flags).toHaveLength(0);
   });
@@ -52,9 +53,10 @@ describe("calculatePredatoryScore", () => {
         hasPayToWin: true,
         hasGacha: true,
         hasSocialPressure: true,
+        hasAds: true,
       },
     };
-    const result = calculatePredatoryScore(game);
+    const result = calculateDesignRiskScore(game);
     expect(result.total).toBe(100);
   });
 
@@ -63,7 +65,7 @@ describe("calculatePredatoryScore", () => {
       ...baseGame,
       mechanics: { ...baseGame.mechanics, hasGacha: true },
     };
-    const result = calculatePredatoryScore(game);
+    const result = calculateDesignRiskScore(game);
     expect(result.total).toBeGreaterThan(0);
     expect(result.flags).toContain("Gacha System");
     expect(result.breakdown.monetization).toBeGreaterThan(0);
@@ -79,7 +81,7 @@ describe("calculatePredatoryScore", () => {
         hasMicrotransactions: true,
       },
     };
-    const result = calculatePredatoryScore(game);
+    const result = calculateDesignRiskScore(game);
     expect(result.flags).toContain("Battle Pass");
     expect(result.flags).toContain("FOMO Events");
     expect(result.total).toBeGreaterThan(20);
@@ -94,7 +96,7 @@ describe("calculatePredatoryScore", () => {
         hasEnergySystem: true,
       },
     };
-    const result = calculatePredatoryScore(game);
+    const result = calculateDesignRiskScore(game);
     expect(result.breakdown.compulsion).toBeGreaterThan(0);
     expect(result.breakdown.monetization).toBe(0);
     expect(result.breakdown.manipulation).toBe(0);
