@@ -20,7 +20,7 @@ export default function CalmScoreRing({ score }: CalmScoreRingProps) {
           cy="70"
           r={radius}
           fill="none"
-          stroke="#e7e5e4"
+          stroke="var(--svg-ring-track)"
           strokeWidth="12"
         />
         <circle
@@ -43,7 +43,7 @@ export default function CalmScoreRing({ score }: CalmScoreRingProps) {
           dominantBaseline="middle"
           fontSize="28"
           fontWeight="700"
-          fill="#1c1917"
+          fill="var(--svg-text-primary)"
         >
           {score}
         </text>
@@ -53,7 +53,7 @@ export default function CalmScoreRing({ score }: CalmScoreRingProps) {
           textAnchor="middle"
           dominantBaseline="middle"
           fontSize="11"
-          fill="#78716c"
+          fill="var(--svg-text-secondary)"
         >
           Calm Score
         </text>

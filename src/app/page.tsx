@@ -1,133 +1,131 @@
-import CalmScoreRing from "@/components/CalmScoreRing";
+import { mockGameLibrary } from "@/lib/data";
+import {
+  calculateDesignRiskScore,
+  calculateJoyIndex,
+  detectHabitPatterns,
+  generateRecommendation,
+} from "@/lib/engines";
+import type { AnalyzedGame } from "@/lib/types";
+import Link from "next/link";
+import Header from "@/components/Header";
+import PlayerHealthSummary from "@/components/PlayerHealthSummary";
+import GameLibrary from "@/components/GameLibrary";
 import StatCard from "@/components/StatCard";
-import ScreenTimeChart from "@/components/ScreenTimeChart";
-import AppUsageList from "@/components/AppUsageList";
-import WhatYouDidntMiss from "@/components/WhatYouDidntMiss";
-import PomodoroTimer from "@/components/PomodoroTimer";
-import BreathingExercise from "@/components/BreathingExercise";
-import DailyIntention from "@/components/DailyIntention";
-import { dailyStats } from "@/lib/data";
+
+function analyzeLibrary(): AnalyzedGame[] {
+  return mockGameLibrary.map((game) => {
+    const designRiskScore = calculateDesignRiskScore(game);
+    const joyIndex = calculateJoyIndex(game, designRiskScore);
+    const detectedPatterns = detectHabitPatterns(game);
+    const recommendation = generateRecommendation(designRiskScore, joyIndex);
+    return { ...game, designRiskScore, joyIndex, detectedPatterns, recommendation };
+  });
+}
 
 export default function Home() {
-  const date = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const games = analyzeLibrary();
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+  const avgRisk = Math.round(
+    games.reduce((s, g) => s + g.designRiskScore.total, 0) / games.length
+  );
+  const avgJoy = Math.round(
+    games.reduce((s, g) => s + g.joyIndex.total, 0) / games.length
+  );
+  const redFlagCount = games.filter((g) => g.recommendation.verdict === "red-flag").length;
+  const cleanCount = games.filter((g) => g.recommendation.verdict === "healthy").length;
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-stone-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-400 flex items-center justify-center">
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="white" strokeWidth="2" fill="none" />
-                <path d="M12 7v5l3 3" stroke="white" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="font-semibold text-stone-800 text-lg tracking-tight">Tranquil</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-stone-400 hidden sm:block">{date}</span>
-            <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-semibold text-stone-500">
-              Y
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
+      <Header />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Hero */}
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-6">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <CalmScoreRing score={dailyStats.calmScore} />
-            <div className="flex-1 flex flex-col gap-3 text-center sm:text-left w-full">
-              <div>
-                <h1 className="text-2xl font-semibold text-stone-800">Good {greeting}.</h1>
-                <p className="text-stone-500 mt-1 text-sm max-w-sm">
-                  {dailyStats.screenFreeHours}h screen-free and {dailyStats.focusSessions} focus sessions today.
-                </p>
-              </div>
-              <DailyIntention />
-              <div className="inline-flex items-center gap-2 bg-white border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm self-center sm:self-start">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                FOMO Risk: Low ({dailyStats.fomoScore}%)
-              </div>
-            </div>
-          </div>
-        </div>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <PlayerHealthSummary games={games} />
 
-        {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
-            label="Screen-Free Hours"
-            value={`${dailyStats.screenFreeHours}h`}
-            sub="Today"
-            accent="bg-emerald-50"
+            label="Avg Design Risk Score"
+            value={`${avgRisk}/100`}
+            sub="Lower is better"
+            accent="bg-rose-50 dark:bg-rose-950/40"
             icon={
-              <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.02 12.02.707.707M3 12h1m16 0h1M4.927 19.073l.707-.707M18.364 4.636l.707-.707" />
-              </svg>
-            }
-          />
-          <StatCard
-            label="Focus Sessions"
-            value={dailyStats.focusSessions}
-            sub="3 completed"
-            accent="bg-sky-50"
-            icon={
-              <svg className="w-5 h-5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="9" />
-                <path strokeLinecap="round" d="M12 7v5l3 3" />
-              </svg>
-            }
-          />
-          <StatCard
-            label="Mindful Breaks"
-            value={dailyStats.mindfulBreaks}
-            sub="Goal: 6"
-            accent="bg-violet-50"
-            icon={
-              <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 010 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            }
-          />
-          <StatCard
-            label="Limit Resets"
-            value={dailyStats.limitResets}
-            sub="Keep it low"
-            accent="bg-amber-50"
-            icon={
-              <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
             }
           />
+          <StatCard
+            label="Avg Joy Index"
+            value={`${avgJoy}/100`}
+            sub="Genuine enjoyment"
+            accent="bg-violet-50 dark:bg-violet-950/40"
+            icon={
+              <svg className="w-5 h-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Red Flags"
+            value={redFlagCount}
+            sub={`of ${games.length} games`}
+            accent="bg-amber-50 dark:bg-amber-950/40"
+            icon={
+              <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 21V7l9-4 9 4v14" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V12h6v9" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Clean Games"
+            value={cleanCount}
+            sub="Healthy picks"
+            accent="bg-emerald-50 dark:bg-emerald-950/40"
+            icon={
+              <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            }
+          />
         </div>
 
-        {/* Timer + Breathing */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <PomodoroTimer />
-          <BreathingExercise />
+        {/* Score methodology explainer */}
+        <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-3">
+            How scores work
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1">Design Risk Score</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                0–100. A weighted count of concern patterns: gacha, pay-to-win, and loot boxes carry the most weight.
+                Lower is better.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-violet-600 dark:text-violet-400 mb-1">Joy Index</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                0–100. Community satisfaction (80%) minus a design risk penalty. A beloved game with aggressive
+                monetisation still scores lower than a clean one. Higher is better.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-1">Verdict</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                Healthy · Mindful · Caution · Red Flag — derived from both scores together.{" "}
+                <Link href="/patterns" className="text-violet-500 hover:text-violet-700 dark:hover:text-violet-300 underline transition-colors">
+                  Learn about each pattern →
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Screen time + App usage */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ScreenTimeChart />
-          <AppUsageList />
-        </div>
-
-        {/* What you didn't miss */}
-        <WhatYouDidntMiss />
+        <GameLibrary games={games} />
       </main>
 
-      <footer className="text-center text-xs text-stone-300 pb-8 pt-4">
-        Tranquil · Your digital calm companion
+      <footer className="text-center text-xs text-stone-300 dark:text-stone-700 pb-8 pt-4">
+        Anti-FOMO &middot; Evidence-based gaming insights &middot; Open source
       </footer>
     </div>
   );
