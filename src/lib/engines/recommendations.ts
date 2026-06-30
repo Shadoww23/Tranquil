@@ -1,7 +1,7 @@
-import type { PredatoryScore, JoyIndex, Recommendation } from "../types";
+import type { DesignRiskScore, JoyIndex, Recommendation } from "../types";
 
 export function generateRecommendation(
-  predatoryScore: PredatoryScore,
+  predatoryScore: DesignRiskScore,
   joyIndex: JoyIndex
 ): Recommendation {
   const p = predatoryScore.total;
