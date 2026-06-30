@@ -31,11 +31,11 @@ export default function DailyIntention() {
       <div className="flex gap-2 w-full">
         <input
           type="text"
-          placeholder="What’s your intention for today?"
+          placeholder="What's your intention for today?"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && save()}
-          className="flex-1 text-sm bg-white/70 border border-emerald-200 rounded-xl px-3 py-2 text-stone-700 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+          className="flex-1 text-sm bg-white/70 dark:bg-stone-800/70 border border-emerald-200 dark:border-emerald-800 rounded-xl px-3 py-2 text-stone-700 dark:text-stone-200 placeholder:text-stone-400 dark:placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700"
           autoFocus
         />
         <button
@@ -53,10 +53,10 @@ export default function DailyIntention() {
       onClick={() => { setDraft(saved); setEditing(true); }}
       className="text-left w-full group"
     >
-      <p className="text-xs text-stone-400">Today&apos;s intention</p>
-      <p className="text-sm font-medium text-stone-700 group-hover:text-emerald-700 transition-colors">
+      <p className="text-xs text-stone-400 dark:text-stone-500">Today&apos;s intention</p>
+      <p className="text-sm font-medium text-stone-700 dark:text-stone-200 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
         &ldquo;{saved}&rdquo;{" "}
-        <span className="text-stone-300 text-xs font-normal">&middot; edit</span>
+        <span className="text-stone-300 dark:text-stone-600 text-xs font-normal">&middot; edit</span>
       </p>
     </button>
   );

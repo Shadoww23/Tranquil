@@ -92,23 +92,23 @@ export default function PomodoroTimer() {
   const atStart = secondsLeft === total;
 
   return (
-    <div className="rounded-2xl bg-white border border-stone-100 shadow-sm p-5">
+    <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-stone-800">Focus Timer</h2>
+        <h2 className="font-semibold text-stone-800 dark:text-stone-100">Focus Timer</h2>
         <span className={`text-xs font-medium px-2 py-1 rounded-full ${c.badge}`}>
           {sessions} session{sessions !== 1 ? "s" : ""} today
         </span>
       </div>
 
-      <div className="flex gap-1 bg-stone-100 rounded-xl p-1 mb-5">
+      <div className="flex gap-1 bg-stone-100 dark:bg-stone-700 rounded-xl p-1 mb-5">
         {(Object.keys(MODES) as Mode[]).map((m) => (
           <button
             key={m}
             onClick={() => switchMode(m)}
             className={`flex-1 text-xs font-medium py-1.5 rounded-lg transition-colors ${
               mode === m
-                ? "bg-white text-stone-800 shadow-sm"
-                : "text-stone-400 hover:text-stone-600"
+                ? "bg-white dark:bg-stone-600 text-stone-800 dark:text-stone-100 shadow-sm"
+                : "text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300"
             }`}
           >
             {MODES[m].label}
@@ -118,7 +118,7 @@ export default function PomodoroTimer() {
 
       <div className="flex justify-center mb-5">
         <svg width="140" height="140" viewBox="0 0 140 140">
-          <circle cx="70" cy="70" r={radius} fill="none" stroke="#e7e5e4" strokeWidth="10" />
+          <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--svg-ring-track)" strokeWidth="10" />
           <circle
             cx="70" cy="70" r={radius} fill="none"
             stroke={c.ring} strokeWidth="10" strokeLinecap="round"
@@ -127,10 +127,10 @@ export default function PomodoroTimer() {
             transform="rotate(-90 70 70)"
             style={{ transition: running ? "stroke-dashoffset 1s linear" : "none" }}
           />
-          <text x="70" y="63" textAnchor="middle" dominantBaseline="middle" fontSize="26" fontWeight="700" fill="#1c1917">
+          <text x="70" y="63" textAnchor="middle" dominantBaseline="middle" fontSize="26" fontWeight="700" fill="var(--svg-text-primary)">
             {mins}:{secs}
           </text>
-          <text x="70" y="84" textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="#78716c">
+          <text x="70" y="84" textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="var(--svg-text-secondary)">
             {MODES[mode].label}
           </text>
         </svg>
@@ -145,7 +145,7 @@ export default function PomodoroTimer() {
         </button>
         <button
           onClick={() => switchMode(mode)}
-          className="px-4 py-2.5 rounded-xl text-sm font-medium text-stone-500 bg-stone-100 hover:bg-stone-200 transition-colors"
+          className="px-4 py-2.5 rounded-xl text-sm font-medium text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
         >
           Reset
         </button>

@@ -39,9 +39,9 @@ export default function BreathingExercise() {
   const transition = active ? `transform ${step.seconds}s ease-in-out` : "none";
 
   return (
-    <div className="rounded-2xl bg-white border border-stone-100 shadow-sm p-5">
+    <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-stone-800">Mindful Breathing</h2>
+        <h2 className="font-semibold text-stone-800 dark:text-stone-100">Mindful Breathing</h2>
         {cycles > 0 && (
           <span className="text-xs bg-teal-50 text-teal-600 font-medium px-2 py-1 rounded-full">
             {cycles} cycle{cycles !== 1 ? "s" : ""}
@@ -69,7 +69,7 @@ export default function BreathingExercise() {
           </div>
         </div>
 
-        <p className="text-xs text-stone-400 text-center max-w-[200px]">
+        <p className="text-xs text-stone-400 dark:text-stone-500 text-center max-w-[200px]">
           {active
             ? "Follow the circle — let the rhythm guide you."
             : "4-4-6-2 pattern to calm your nervous system."}
@@ -85,7 +85,7 @@ export default function BreathingExercise() {
         ) : (
           <button
             onClick={stop}
-            className="w-full py-2.5 rounded-xl text-sm font-medium text-stone-500 bg-stone-100 hover:bg-stone-200 transition-colors"
+            className="w-full py-2.5 rounded-xl text-sm font-medium text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
           >
             Stop
           </button>

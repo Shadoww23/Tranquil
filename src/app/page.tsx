@@ -20,23 +20,23 @@ export default function Home() {
   const greeting = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
       <Header date={date} />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Hero */}
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-6">
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-100 dark:border-emerald-900 p-6">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <CalmScoreRing score={dailyStats.calmScore} />
             <div className="flex-1 flex flex-col gap-3 text-center sm:text-left w-full">
               <div>
-                <h1 className="text-2xl font-semibold text-stone-800">Good {greeting}.</h1>
-                <p className="text-stone-500 mt-1 text-sm max-w-sm">
+                <h1 className="text-2xl font-semibold text-stone-800 dark:text-stone-100">Good {greeting}.</h1>
+                <p className="text-stone-500 dark:text-stone-400 mt-1 text-sm max-w-sm">
                   {dailyStats.screenFreeHours}h screen-free and {dailyStats.focusSessions} focus sessions today.
                 </p>
               </div>
               <DailyIntention />
-              <div className="inline-flex items-center gap-2 bg-white border border-emerald-200 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm self-center sm:self-start">
+              <div className="inline-flex items-center gap-2 bg-white dark:bg-stone-800 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-sm font-medium px-4 py-2 rounded-full shadow-sm self-center sm:self-start">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 FOMO Risk: Low ({dailyStats.fomoScore}%)
               </div>
@@ -109,7 +109,7 @@ export default function Home() {
         <WhatYouDidntMiss />
       </main>
 
-      <footer className="text-center text-xs text-stone-300 pb-8 pt-4">
+      <footer className="text-center text-xs text-stone-300 dark:text-stone-700 pb-8 pt-4">
         Tranquil · Your digital calm companion
       </footer>
     </div>
