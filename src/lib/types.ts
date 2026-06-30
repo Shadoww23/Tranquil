@@ -30,6 +30,7 @@ export interface Game {
   ageRating?: string;
   requiresOnline?: boolean;
   estimatedHoursToComplete?: number;
+  steamAppId?: number;
 }
 
 export interface DesignRiskScore {
