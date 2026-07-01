@@ -1,3 +1,8 @@
+// What a game's real-money purchases actually buy. This is the key factual
+// signal that lets the score distinguish cosmetic-only monetisation (low risk)
+// from pay-for-power (high risk), instead of penalising any monetisation.
+export type MonetizationImpact = "none" | "cosmetic" | "convenience" | "power";
+
 export interface GameMechanics {
   hasLootBoxes: boolean;
   hasBattlePass: boolean;
@@ -11,6 +16,10 @@ export interface GameMechanics {
   hasGacha: boolean;
   hasSocialPressure: boolean;
   hasAds: boolean;
+  /** What purchases buy. When omitted, the engine infers it conservatively. */
+  monetizationImpact?: MonetizationImpact;
+  /** Provenance of this data. "inferred" (Steam store guess) lowers confidence. */
+  source?: "verified" | "inferred";
 }
 
 export interface Game {
@@ -33,6 +42,16 @@ export interface Game {
   steamAppId?: number;
 }
 
+// A single scored mechanic, with the points it contributed and a plain-language
+// reason — so a score can always explain itself rather than looking like a
+// black box.
+export interface RiskFactor {
+  label: string;
+  category: "monetization" | "manipulation" | "compulsion";
+  points: number;
+  reason: string;
+}
+
 export interface DesignRiskScore {
   total: number;
   breakdown: {
@@ -40,7 +59,12 @@ export interface DesignRiskScore {
     manipulation: number;
     compulsion: number;
   };
+  /** Human-readable labels of each contributing factor (back-compat). */
   flags: string[];
+  /** Structured factors with points + reasons, for the "why". */
+  factors: RiskFactor[];
+  /** "high" = verified data; "low" = inferred from a store listing. */
+  confidence: "high" | "low";
 }
 
 export type JoyLabel = "Excellent" | "Good" | "Fair" | "Poor";

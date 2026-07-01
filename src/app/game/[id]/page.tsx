@@ -10,6 +10,7 @@ import {
 import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
+import { ConfidenceBadge, RiskFactorList } from "@/components/RiskFactors";
 import Header from "@/components/Header";
 
 const verdictStyles = {
@@ -94,9 +95,12 @@ export default async function GameDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Design Risk Score */}
           <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-3">
-              Design Risk Score
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+                Design Risk Score
+              </p>
+              <ConfidenceBadge confidence={designRiskScore.confidence} />
+            </div>
             <p className={`text-4xl font-bold tabular-nums ${riskColor(designRiskScore.total)}`}>
               {designRiskScore.total}
               <span className="text-lg font-normal text-stone-400">/100</span>
@@ -173,25 +177,18 @@ export default async function GameDetailPage({ params }: Props) {
           </div>
         )}
 
-        {/* All flags */}
-        {designRiskScore.flags.length > 0 && (
-          <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
-            <h2 className="font-semibold text-stone-800 dark:text-stone-100 mb-3">Scoring Flags</h2>
-            <div className="flex flex-wrap gap-2">
-              {designRiskScore.flags.map((flag) => (
-                <span
-                  key={flag}
-                  className="text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 px-2.5 py-1 rounded-full"
-                >
-                  {flag}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-3">
-              These flags contributed to the Design Risk Score of {designRiskScore.total}/100.
-            </p>
+        {/* Why this score */}
+        <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-stone-800 dark:text-stone-100">Why this score</h2>
+            <ConfidenceBadge confidence={designRiskScore.confidence} />
           </div>
-        )}
+          <RiskFactorList score={designRiskScore} />
+          <p className="text-xs text-stone-400 dark:text-stone-500 mt-4 pt-3 border-t border-stone-100 dark:border-stone-700">
+            Points reflect <span className="font-medium">severity</span>, not just presence — cosmetic-only
+            purchases score far lower than pay-for-power. Total: {designRiskScore.total}/100.
+          </p>
+        </div>
       </main>
 
       <footer className="text-center text-xs text-stone-300 dark:text-stone-700 pb-8 pt-4">

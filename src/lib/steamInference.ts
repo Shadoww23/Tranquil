@@ -65,6 +65,9 @@ export function inferMechanicsFromSteamData(appData: SteamAppData): GameMechanic
     hasPayToWin: scanText(rawText, KEYWORD_MAP.hasPayToWin!),
     hasSocialPressure: scanText(rawText, KEYWORD_MAP.hasSocialPressure!),
     dlcCount,
+    // Guessed from the store listing — leave monetizationImpact unset so the
+    // engine infers it conservatively, and flag the whole thing low-confidence.
+    source: "inferred",
   };
 }
 
@@ -111,5 +114,6 @@ export function emptMechanics(): GameMechanics {
     hasPayToWin: false,
     hasSocialPressure: false,
     dlcCount: 0,
+    source: "inferred",
   };
 }
