@@ -109,7 +109,9 @@ async function processGame(sg: SteamOwnedGame): Promise<Game> {
 
   if (curatedId) {
     const curated = mockGameLibrary.find((g) => g.id === curatedId);
-    if (curated) return { ...curated, hoursPlayed };
+    // Carry the Steam appid so we can show the real cover, without changing the
+    // curated game's id (routing stays on /game/[id]).
+    if (curated) return { ...curated, hoursPlayed, steamAppId: sg.appid };
   }
 
   let mechanics = emptMechanics();

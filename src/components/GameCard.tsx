@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AnalyzedGame } from "@/lib/types";
 import { joyColor, riskBarColor } from "@/lib/colorUtils";
 import PatternBadge from "./PatternBadge";
+import GameCover from "./GameCover";
 
 const platformStyles: Record<AnalyzedGame["platform"], string> = {
   Steam: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
@@ -37,7 +38,7 @@ export default function GameCard({ game }: Props) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <div className={`shrink-0 w-8 h-8 rounded-lg ${game.coverColor} opacity-80`} aria-hidden />
+          <GameCover game={game} className="shrink-0 w-8 h-8 rounded-lg" />
           <div className="min-w-0">
             <h3 className="font-semibold text-stone-800 dark:text-stone-100 truncate leading-tight">{game.title}</h3>
             <p className="text-xs text-stone-400 dark:text-stone-500 truncate">{game.genre.join(" · ")}</p>

@@ -6,6 +6,7 @@ import {
   generateRecommendation,
 } from "@/lib/engines";
 import { riskColor, joyColor } from "@/lib/colorUtils";
+import GameCover from "@/components/GameCover";
 import Header from "@/components/Header";
 
 type Platform = "Steam" | "Epic" | "GOG";
@@ -204,10 +205,7 @@ export default function PlatformsPage() {
                       : ""
                   }`}
                 >
-                  <div
-                    className={`w-7 h-7 rounded-lg ${game.coverColor} opacity-80 shrink-0`}
-                    aria-hidden
-                  />
+                  <GameCover game={game} className="w-7 h-7 rounded-lg shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-stone-800 dark:text-stone-100 truncate">
                       {game.title}

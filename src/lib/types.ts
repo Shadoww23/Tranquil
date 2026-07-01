@@ -40,6 +40,8 @@ export interface Game {
   requiresOnline?: boolean;
   estimatedHoursToComplete?: number;
   steamAppId?: number;
+  /** Explicit cover image URL; when absent we derive one from steamAppId. */
+  coverImage?: string;
 }
 
 // The kinds of concern a player can be more or less sensitive to. Used by the
