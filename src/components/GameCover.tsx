@@ -3,10 +3,12 @@
 import { useState } from "react";
 import type { Game } from "@/lib/types";
 
-// Steam serves each game's header art at a predictable CDN path keyed by appid,
-// so we can show real covers without any extra API call.
-export function steamHeaderUrl(appid: number): string {
-  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
+// Candidate cover images for a Steam appid, best-fitting first. The portrait
+// "library" capsule is box art (2:3) that crops into a square cleanly; the wide
+// header is a fallback for games that lack library art.
+export function steamCoverUrls(appid: number): string[] {
+  const base = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}`;
+  return [`${base}/library_600x900.jpg`, `${base}/header.jpg`];
 }
 
 type CoverGame = Pick<Game, "coverColor" | "steamAppId" | "coverImage" | "title">;
@@ -18,26 +20,31 @@ interface Props {
 }
 
 /**
- * Shows a game's cover art (from Steam's CDN when we have an appid), falling back
- * to the coloured placeholder square if there's no image or it fails to load.
+ * Shows a game's cover art (from Steam's CDN when we have an appid), trying
+ * portrait box art first, then the wide header, then falling back to the
+ * coloured placeholder square if nothing loads.
  */
 export default function GameCover({ game, className = "" }: Props) {
-  const url = game.coverImage ?? (game.steamAppId ? steamHeaderUrl(game.steamAppId) : null);
-  const [failed, setFailed] = useState(false);
+  const urls = game.coverImage
+    ? [game.coverImage]
+    : game.steamAppId
+      ? steamCoverUrls(game.steamAppId)
+      : [];
+  const [idx, setIdx] = useState(0);
 
-  if (!url || failed) {
+  if (urls.length === 0 || idx >= urls.length) {
     return <div className={`${game.coverColor} ${className}`} aria-hidden />;
   }
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={url}
+      src={urls[idx]}
       alt=""
       aria-hidden
       loading="lazy"
-      onError={() => setFailed(true)}
-      className={`object-cover bg-stone-200 dark:bg-stone-700 ${className}`}
+      onError={() => setIdx((i) => i + 1)}
+      className={`object-cover object-center bg-stone-200 dark:bg-stone-700 ${className}`}
     />
   );
 }
