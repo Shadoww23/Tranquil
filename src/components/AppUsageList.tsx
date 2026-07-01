@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { AnalyzedGame } from "@/lib/types";
+import GameCover from "./GameCover";
 
 interface Props {
   games: AnalyzedGame[];
@@ -27,7 +28,7 @@ export default function AppUsageList({ games }: Props) {
         return (
           <Link key={game.id} href={href} className={`flex items-center gap-3 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors ${i < sorted.length - 1 ? "border-b border-stone-50 dark:border-stone-700/50" : ""}`}>
             <span className="w-5 text-xs text-stone-300 dark:text-stone-600 text-right shrink-0">{i + 1}</span>
-            <div className={`w-6 h-6 rounded-md ${game.coverColor} opacity-70 shrink-0`} aria-hidden />
+            <GameCover game={game} className="w-6 h-6 rounded-md shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-stone-700 dark:text-stone-200 truncate">{game.title}</p>
               <div className="flex items-center gap-1 mt-0.5">

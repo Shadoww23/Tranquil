@@ -1,4 +1,5 @@
 import type { Game, MonetizationImpact } from "./types";
+import { CURATED_APPIDS } from "./steamInference";
 
 export const mockGameLibrary: Game[] = [
   {
@@ -712,4 +713,12 @@ const MONETIZATION_IMPACT: Record<string, MonetizationImpact> = {
 for (const game of mockGameLibrary) {
   const impact = MONETIZATION_IMPACT[game.id];
   if (impact) game.mechanics.monetizationImpact = impact;
+}
+
+// Give curated games their Steam appid (reverse of CURATED_APPIDS) so the demo
+// library shows real cover art too. Doesn't affect routing (ids are unchanged).
+const APPID_BY_ID: Record<string, number> = {};
+for (const [appid, id] of Object.entries(CURATED_APPIDS)) APPID_BY_ID[id] = Number(appid);
+for (const game of mockGameLibrary) {
+  if (!game.steamAppId && APPID_BY_ID[game.id]) game.steamAppId = APPID_BY_ID[game.id];
 }
