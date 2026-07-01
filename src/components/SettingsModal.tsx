@@ -54,6 +54,7 @@ export default function SettingsModal({ open, onClose }: Props) {
     const next: PreferenceProfile = {
       weights: { ...profile.weights, [dim]: weight },
       updatedAt: new Date().toISOString(),
+      source: "user",
     };
     setProfile(next);
     savePreferences(next);
@@ -185,9 +186,14 @@ export default function SettingsModal({ open, onClose }: Props) {
             <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1">
               What matters to you
             </p>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
+            <p className="text-xs text-stone-400 dark:text-stone-500 mb-2">
               Personalises the &ldquo;For you&rdquo; reading on each game. Objective scores never change.
             </p>
+            {profile.source === "derived" && (
+              <p className="text-[11px] text-violet-500 dark:text-violet-400 mb-3">
+                Starting point tuned from your library — adjust anything below.
+              </p>
+            )}
             <div className="space-y-3">
               {DIMENSIONS.map((dim) => {
                 const current = weightToLevel(profile.weights[dim]);

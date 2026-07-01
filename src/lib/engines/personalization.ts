@@ -42,7 +42,37 @@ export const SENSITIVITY_LEVELS = [
 export function defaultProfile(): PreferenceProfile {
   const weights = {} as Record<ConcernDimension, number>;
   for (const d of DIMENSIONS) weights[d] = NEUTRAL;
-  return { weights, updatedAt: new Date().toISOString() };
+  return { weights, updatedAt: new Date().toISOString(), source: "default" };
+}
+
+/**
+ * Seed a starting profile from the user's actual library (revealed preference):
+ * the more hours they've voluntarily sunk into games carrying a given concern,
+ * the more they've shown they tolerate it, so we lower that sensitivity. Absence
+ * of exposure is *not* evidence of intolerance, so weights only ever move down
+ * from neutral here — never up. Objective scores are untouched, as always.
+ */
+export function deriveProfileFromLibrary(
+  entries: { hoursPlayed: number; score: DesignRiskScore }[]
+): PreferenceProfile {
+  const base = defaultProfile();
+  const totalHours = entries.reduce((s, e) => s + Math.max(0, e.hoursPlayed), 0);
+  if (totalHours <= 0) return { ...base, source: "derived" };
+
+  const weights = { ...base.weights };
+  for (const dim of DIMENSIONS) {
+    let exposure = 0;
+    for (const e of entries) {
+      if (e.hoursPlayed > 0 && e.score.factors.some((f) => f.dimension === dim)) {
+        exposure += e.hoursPlayed;
+      }
+    }
+    const fraction = exposure / totalHours;
+    // fraction 0 → 1 (neutral); high exposure → toward 0.4 (tolerant).
+    const w = Math.max(0.4, Math.min(1, 1 - fraction * 0.8));
+    weights[dim] = Math.round(w * 100) / 100;
+  }
+  return { weights, updatedAt: new Date().toISOString(), source: "derived" };
 }
 
 // Map an arbitrary stored weight back to the nearest UI level.
@@ -123,5 +153,5 @@ export function nudgeProfile(
   for (const d of dims) {
     weights[d] = Math.round(clamp((weights[d] ?? NEUTRAL) + delta) * 100) / 100;
   }
-  return { weights, updatedAt: new Date().toISOString() };
+  return { weights, updatedAt: new Date().toISOString(), source: "user" };
 }

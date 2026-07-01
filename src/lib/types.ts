@@ -68,6 +68,8 @@ export interface RiskFactor {
 export interface PreferenceProfile {
   weights: Record<ConcernDimension, number>;
   updatedAt: string;
+  /** How the profile was set: neutral default, seeded from the library, or edited by the user. */
+  source?: "default" | "derived" | "user";
 }
 
 export interface DesignRiskScore {

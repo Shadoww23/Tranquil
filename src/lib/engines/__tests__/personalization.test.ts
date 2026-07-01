@@ -4,6 +4,7 @@ import {
   personalizedConcern,
   nudgeProfile,
   defaultProfile,
+  deriveProfileFromLibrary,
 } from "../personalization";
 import type { Game, PreferenceProfile } from "../../types";
 
@@ -69,6 +70,46 @@ describe("personalizedConcern", () => {
     const result = personalizedConcern(cosmeticScore, defaultProfile());
     expect(result.topDimensions.length).toBeGreaterThan(0);
     expect(result.topDimensions).toContain("cosmeticSpend");
+  });
+});
+
+describe("deriveProfileFromLibrary", () => {
+  const cosmeticGame = (hours: number): Game => ({
+    ...baseGame,
+    hoursPlayed: hours,
+    mechanics: { ...baseGame.mechanics, monetizationImpact: "cosmetic" },
+  });
+  const cleanGame = (hours: number): Game => ({
+    ...baseGame,
+    hoursPlayed: hours,
+    mechanics: {
+      ...baseGame.mechanics,
+      hasBattlePass: false,
+      hasMicrotransactions: false,
+      hasLimitedTimeEvents: false,
+      monetizationImpact: "none",
+    },
+  });
+
+  const scored = (g: Game) => ({ hoursPlayed: g.hoursPlayed, score: calculateDesignRiskScore(g) });
+
+  it("lowers sensitivity for concerns the player sinks hours into (revealed tolerance)", () => {
+    const profile = deriveProfileFromLibrary([scored(cosmeticGame(200))]);
+    expect(profile.weights.cosmeticSpend).toBeLessThan(1);
+    expect(profile.weights.fomo).toBeLessThan(1);
+    expect(profile.source).toBe("derived");
+  });
+
+  it("never raises a weight above neutral, and leaves unexposed concerns neutral", () => {
+    const profile = deriveProfileFromLibrary([scored(cosmeticGame(200))]);
+    for (const w of Object.values(profile.weights)) expect(w).toBeLessThanOrEqual(1);
+    // No pay-to-win game played → payForPower stays neutral.
+    expect(profile.weights.payForPower).toBe(1);
+  });
+
+  it("returns a neutral derived profile when there are no hours to learn from", () => {
+    const profile = deriveProfileFromLibrary([scored(cleanGame(0)), scored(cosmeticGame(0))]);
+    for (const w of Object.values(profile.weights)) expect(w).toBe(1);
   });
 });
 

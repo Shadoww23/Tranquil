@@ -13,7 +13,7 @@ import WhatYouDidntMiss from "@/components/WhatYouDidntMiss";
 import CalmScoreRing from "@/components/CalmScoreRing";
 import ScreenTimeChart from "@/components/ScreenTimeChart";
 import AppUsageList from "@/components/AppUsageList";
-import { getStoredLibrary, clearLibrary, type LibraryMeta } from "@/lib/userLibrary";
+import { getStoredLibrary, clearLibrary, ensureProfileSeeded, type LibraryMeta } from "@/lib/userLibrary";
 
 function analyzeGames(games: Game[]): AnalyzedGame[] {
   return games.map((game) => {
@@ -33,6 +33,7 @@ export default function Home() {
   const loadLibrary = useCallback(() => {
     const stored = getStoredLibrary();
     if (stored) {
+      ensureProfileSeeded(stored.games);
       setGames(analyzeGames(stored.games));
       setSteamMeta(stored.meta);
     } else {

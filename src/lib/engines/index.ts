@@ -6,6 +6,7 @@ export {
   personalizedConcern,
   nudgeProfile,
   defaultProfile,
+  deriveProfileFromLibrary,
   weightToLevel,
   DIMENSIONS,
   DIMENSION_META,
