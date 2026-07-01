@@ -1,23 +1,87 @@
 "use client";
 
-import { useState } from "react";
-import { resolveVanityUrl, importSteamLibrary } from "@/lib/steamImport";
+import { useState, useEffect, useCallback } from "react";
+import {
+  resolveVanityUrl,
+  importSteamLibrary,
+  PrivateProfileError,
+} from "@/lib/steamImport";
 import { saveLibrary, saveSteamCredentials } from "@/lib/userLibrary";
 
-type Step = "key" | "id" | "importing" | "done";
+type Step = "choose" | "key" | "id" | "importing" | "done";
 
 interface Props {
   onClose: () => void;
   onImported: () => void;
+  /** When set, we came back from "Sign in through Steam" — import straight away. */
+  initialSteamId?: string;
+  /** Set when the OpenID redirect failed, e.g. "auth" or "noserverkey". */
+  initialError?: string;
 }
 
-export default function SteamConnect({ onClose, onImported }: Props) {
-  const [step, setStep] = useState<Step>("key");
+const SteamLogo = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+  </svg>
+);
+
+export default function SteamConnect({
+  onClose,
+  onImported,
+  initialSteamId,
+  initialError,
+}: Props) {
+  const [step, setStep] = useState<Step>(initialSteamId ? "importing" : "choose");
   const [apiKey, setApiKey] = useState("");
   const [steamInput, setSteamInput] = useState("");
   const [progress, setProgress] = useState({ step: "", current: 0, total: 0 });
-  const [error, setError] = useState("");
+  const [error, setError] = useState(
+    initialError === "auth"
+      ? "Steam sign-in didn't complete. Please try again."
+      : initialError === "noserverkey"
+        ? "Steam sign-in isn't configured on this server yet. Use your own API key below instead."
+        : ""
+  );
+  const [isPrivate, setIsPrivate] = useState(false);
   const [gameCount, setGameCount] = useState(0);
+
+  // Runs the actual import + persistence. apiKey omitted → app-owned key (Tier 1).
+  const runImport = useCallback(
+    async (steamId: string, key?: string) => {
+      setError("");
+      setIsPrivate(false);
+      setStep("importing");
+      try {
+        const games = await importSteamLibrary(steamId, key, (label, current, total) =>
+          setProgress({ step: label, current, total })
+        );
+
+        if (key) saveSteamCredentials(key, steamId);
+        saveLibrary({
+          meta: { steamId, gameCount: games.length, importedAt: new Date().toISOString() },
+          games,
+        });
+
+        setGameCount(games.length);
+        setStep("done");
+      } catch (err) {
+        if (err instanceof PrivateProfileError) {
+          setIsPrivate(true);
+          setError(err.message);
+        } else {
+          setError(err instanceof Error ? err.message : "Import failed. Please try again.");
+        }
+        // Back to the relevant entry point so the user can retry.
+        setStep(key ? "id" : "choose");
+      }
+    },
+    []
+  );
+
+  // Returning from Steam OpenID: kick off the import with the app key.
+  useEffect(() => {
+    if (initialSteamId) runImport(initialSteamId);
+  }, [initialSteamId, runImport]);
 
   const handleKeyNext = () => {
     if (apiKey.trim().length < 20) {
@@ -28,7 +92,7 @@ export default function SteamConnect({ onClose, onImported }: Props) {
     setStep("id");
   };
 
-  const handleImport = async () => {
+  const handleManualImport = async () => {
     setError("");
     setStep("importing");
 
@@ -41,7 +105,7 @@ export default function SteamConnect({ onClose, onImported }: Props) {
         const resolved = await resolveVanityUrl(steamId, apiKey.trim());
         if (!resolved) {
           setError(
-            "Couldn't resolve that username to a Steam ID. Try using your 64-bit Steam ID instead (find it at steamid.io)."
+            "Couldn't resolve that username to a Steam ID. Try your 64-bit Steam ID instead (find it at steamid.io)."
           );
           setStep("id");
           return;
@@ -54,37 +118,24 @@ export default function SteamConnect({ onClose, onImported }: Props) {
       }
     }
 
-    try {
-      const games = await importSteamLibrary(steamId, apiKey.trim(), (stepLabel, current, total) => {
-        setProgress({ step: stepLabel, current, total });
-      });
-
-      saveSteamCredentials(apiKey.trim(), steamId);
-      saveLibrary({
-        meta: { steamId, gameCount: games.length, importedAt: new Date().toISOString() },
-        games,
-      });
-
-      setGameCount(games.length);
-      setStep("done");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Import failed. Please try again.");
-      setStep("id");
-    }
+    await runImport(steamId, apiKey.trim());
   };
+
+  const showStepper = step === "key" || step === "id";
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Connect Steam"
     >
       <div className="w-full max-w-md bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 dark:border-stone-800">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
+              <SteamLogo className="w-4 h-4 text-white" />
             </div>
             <h2 className="font-semibold text-stone-800 dark:text-stone-100">Connect Steam</h2>
           </div>
@@ -96,7 +147,7 @@ export default function SteamConnect({ onClose, onImported }: Props) {
         </div>
 
         <div className="p-5">
-          {step !== "importing" && step !== "done" && (
+          {showStepper && (
             <div className="flex items-center gap-2 mb-5">
               {(["key", "id"] as const).map((s, i) => (
                 <div key={s} className="flex items-center gap-2">
@@ -109,6 +160,45 @@ export default function SteamConnect({ onClose, onImported }: Props) {
                 </div>
               ))}
               <span className="text-xs text-stone-400 dark:text-stone-500 ml-1">{step === "key" ? "API Key" : "Steam ID"}</span>
+            </div>
+          )}
+
+          {/* Tier 1 — the default: one-click Steam sign-in */}
+          {step === "choose" && (
+            <div className="space-y-4">
+              {isPrivate ? (
+                <PrivateProfileCard onRetry={() => { setError(""); setIsPrivate(false); }} />
+              ) : (
+                <p className="text-sm text-stone-600 dark:text-stone-300">
+                  Sign in through Steam to analyse your library. We never see your
+                  password — Steam handles the login and only shares your public
+                  profile.
+                </p>
+              )}
+
+              <a
+                href="/api/steam/login"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                <SteamLogo className="w-4 h-4" />
+                Sign in through Steam
+              </a>
+
+              {error && !isPrivate && <p className="text-xs text-red-500">{error}</p>}
+
+              <div className="pt-1 text-center">
+                <button
+                  onClick={() => { setError(""); setStep("key"); }}
+                  className="text-xs text-stone-400 dark:text-stone-500 hover:text-sky-500 dark:hover:text-sky-400 transition-colors underline underline-offset-2"
+                >
+                  Advanced: use your own API key instead
+                </button>
+              </div>
+
+              <p className="text-[11px] text-stone-400 dark:text-stone-500 text-center leading-relaxed">
+                Your profile&apos;s <strong>game details</strong> must be set to Public
+                in Steam → Privacy for us to read your library.
+              </p>
             </div>
           )}
 
@@ -131,12 +221,16 @@ export default function SteamConnect({ onClose, onImported }: Props) {
                 />
               </div>
               {error && <p className="text-xs text-red-500">{error}</p>}
-              <button onClick={handleKeyNext} className="w-full py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-xl transition-colors">Next →</button>
+              <div className="flex gap-2">
+                <button onClick={() => { setError(""); setStep("choose"); }} className="px-4 py-2.5 text-sm text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-xl transition-colors">← Back</button>
+                <button onClick={handleKeyNext} className="flex-1 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-xl transition-colors">Next →</button>
+              </div>
             </div>
           )}
 
           {step === "id" && (
             <div className="space-y-4">
+              {isPrivate && <PrivateProfileCard onRetry={() => { setError(""); setIsPrivate(false); }} />}
               <div>
                 <p className="text-sm text-stone-700 dark:text-stone-300 mb-1 font-medium">Your Steam Profile</p>
                 <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
@@ -147,15 +241,15 @@ export default function SteamConnect({ onClose, onImported }: Props) {
                   placeholder="username · steamcommunity.com/id/you · 7656119…"
                   value={steamInput}
                   onChange={(e) => setSteamInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleImport()}
+                  onKeyDown={(e) => e.key === "Enter" && handleManualImport()}
                   className="w-full text-sm bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2.5 text-stone-800 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-sky-300 dark:focus:ring-sky-700"
                   autoFocus
                 />
               </div>
-              {error && <p className="text-xs text-red-500">{error}</p>}
+              {error && !isPrivate && <p className="text-xs text-red-500">{error}</p>}
               <div className="flex gap-2">
                 <button onClick={() => { setError(""); setStep("key"); }} className="px-4 py-2.5 text-sm text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-xl transition-colors">← Back</button>
-                <button onClick={handleImport} disabled={!steamInput.trim()} className="flex-1 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors">Import Library</button>
+                <button onClick={handleManualImport} disabled={!steamInput.trim()} className="flex-1 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors">Import Library</button>
               </div>
             </div>
           )}
@@ -196,6 +290,40 @@ export default function SteamConnect({ onClose, onImported }: Props) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivateProfileCard({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 space-y-2">
+      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+        Your Steam library is private
+      </p>
+      <p className="text-xs text-amber-700 dark:text-amber-400/90 leading-relaxed">
+        Steam won&apos;t share your games until <strong>Game details</strong> is
+        public. It&apos;s a 2-click fix:
+      </p>
+      <ol className="text-xs text-amber-700 dark:text-amber-400/90 list-decimal list-inside space-y-0.5">
+        <li>Steam profile → <strong>Edit Profile → Privacy Settings</strong></li>
+        <li>Set <strong>Game details</strong> to <strong>Public</strong></li>
+      </ol>
+      <a
+        href="https://steamcommunity.com/my/edit/settings"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block text-xs font-medium text-amber-800 dark:text-amber-300 underline underline-offset-2"
+      >
+        Open Steam privacy settings →
+      </a>
+      <div className="pt-1">
+        <button
+          onClick={onRetry}
+          className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline"
+        >
+          I&apos;ve made it public — try again
+        </button>
       </div>
     </div>
   );

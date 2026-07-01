@@ -28,16 +28,38 @@ you can make informed choices about how you spend your time and money.
 
 ## Steam import
 
-Connect your Steam library from the header (**Connect Steam →**). The 4-step
-wizard resolves your profile, fetches your owned games, and analyses each one.
+Connect your Steam library from the header (**Connect Steam →**). There are two
+ways in:
 
-Your **Steam Web API key is never stored server-side** — it travels as an
-`x-steam-key` header from your browser → the app's proxy route → Steam, then is
-discarded. It only ever lives in your own browser's `localStorage`. Curated games
-(hand-verified mechanic data) skip the store API entirely; everything else is
-inferred from the Steam store listing.
+- **Sign in through Steam** (default) — one click. Steam handles the login and
+  only shares your public profile; the app's own server-side Steam Web API key
+  does the library read. You never enter a key.
+- **Advanced: use your own API key** (fallback) — paste your own Steam Web API
+  key. It travels as an `x-steam-key` header from your browser → the app's proxy
+  → Steam, then is discarded, and only ever lives in your browser's
+  `localStorage`. Good for private-profile users or self-hosting without a
+  server key.
 
-No account, no database, no tracking — all your data lives in your browser.
+Either way, your Steam profile's **Game details** must be set to Public
+(Steam → Edit Profile → Privacy) for your library to be visible — the app
+detects a private profile and shows a 2-click fix.
+
+Curated games (hand-verified mechanic data) skip the store API entirely;
+everything else is inferred from the Steam store listing. No account, no
+database — your library lives in your browser.
+
+### Configuration
+
+"Sign in through Steam" needs one server-side key. Copy `.env.example` to
+`.env.local` and set:
+
+```bash
+STEAM_API_KEY=your_key_from_steamcommunity.com/dev/apikey
+```
+
+In production, set `STEAM_API_KEY` in your Vercel project → Settings →
+Environment Variables. If it's unset, the Steam-sign-in button is disabled and
+users fall back to the manual-key flow automatically.
 
 ## Quick start
 

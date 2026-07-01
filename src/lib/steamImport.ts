@@ -15,13 +15,15 @@ interface SteamOwnedGame {
   img_icon_url?: string;
 }
 
-async function steamFetch(url: string, apiKey: string) {
-  return fetch(url, { headers: { "x-steam-key": apiKey } });
+// apiKey is optional: when omitted, the server uses the app-owned STEAM_API_KEY
+// (Tier 1, "Sign in through Steam"). When present, the user's own key is used.
+async function steamFetch(url: string, apiKey?: string) {
+  return fetch(url, apiKey ? { headers: { "x-steam-key": apiKey } } : undefined);
 }
 
 export async function resolveVanityUrl(
   vanity: string,
-  apiKey: string
+  apiKey?: string
 ): Promise<string | null> {
   const res = await steamFetch(
     `/api/steam/resolve?vanity=${encodeURIComponent(vanity)}`,
@@ -32,9 +34,22 @@ export async function resolveVanityUrl(
   return data.success === 1 ? (data.steamid as string) : null;
 }
 
+// Thrown when Steam returns no library because the profile's game details are
+// private. The UI checks `isPrivateProfile` to show a fix-it card instead of a
+// generic error.
+export class PrivateProfileError extends Error {
+  isPrivateProfile = true;
+  constructor() {
+    super(
+      "Your Steam profile's game details are private, so we can't see your library."
+    );
+    this.name = "PrivateProfileError";
+  }
+}
+
 export async function importSteamLibrary(
   steamId: string,
-  apiKey: string,
+  apiKey: string | undefined,
   onProgress: (step: string, current: number, total: number) => void
 ): Promise<Game[]> {
   onProgress("Fetching your Steam library…", 0, 1);
@@ -47,8 +62,11 @@ export async function importSteamLibrary(
   const owned: SteamOwnedGame[] = libData.games ?? [];
 
   if (owned.length === 0) {
+    // Distinguish "private profile" (Steam returned nothing) from a public
+    // profile that genuinely owns no games.
+    if (libData.private) throw new PrivateProfileError();
     throw new Error(
-      "No games found. Make sure your Steam profile visibility is set to Public in Steam → Privacy Settings."
+      "No games found on this account. If you expected games here, make sure your Steam profile is set to Public in Steam → Privacy Settings."
     );
   }
 
