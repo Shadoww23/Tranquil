@@ -5,8 +5,10 @@ import {
   resolveVanityUrl,
   importSteamLibrary,
   PrivateProfileError,
+  MAX_IMPORT_GAMES,
 } from "@/lib/steamImport";
 import { saveLibrary, saveSteamCredentials } from "@/lib/userLibrary";
+import { useModalDismiss } from "@/lib/useModalDismiss";
 
 type Step = "choose" | "key" | "id" | "importing" | "done";
 
@@ -44,6 +46,8 @@ export default function SteamConnect({
   );
   const [isPrivate, setIsPrivate] = useState(false);
   const [gameCount, setGameCount] = useState(0);
+
+  useModalDismiss(onClose);
 
   // Runs the actual import + persistence. apiKey omitted → app-owned key (Tier 1).
   const runImport = useCallback(
@@ -284,6 +288,9 @@ export default function SteamConnect({
               </div>
               <div>
                 <p className="text-sm font-semibold text-stone-800 dark:text-stone-100">{gameCount} games imported</p>
+                {gameCount >= MAX_IMPORT_GAMES && (
+                  <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Showing your {MAX_IMPORT_GAMES} most-played games.</p>
+                )}
                 <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Your library has been analyzed. Curated games use verified mechanic data; others are inferred from Steam Store descriptions.</p>
               </div>
               <button onClick={() => { onImported(); onClose(); }} className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl transition-colors">View my library →</button>

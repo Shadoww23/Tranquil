@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getStoredLibrary, clearLibrary } from "@/lib/userLibrary";
+import { useModalDismiss } from "@/lib/useModalDismiss";
 
 interface Props {
   open: boolean;
@@ -32,6 +33,8 @@ export default function SettingsModal({ open, onClose }: Props) {
     setGameCount(lib?.meta.gameCount ?? 0);
     setShowClearConfirm(false);
   }, [open, mounted]);
+
+  useModalDismiss(onClose, open && mounted);
 
   if (!mounted || !open) return null;
 

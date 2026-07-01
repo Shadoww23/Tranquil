@@ -82,7 +82,7 @@ userLibrary.ts (localStorage CRUD)
 
 There are **two separate game detail routes**:
 
-- `/game/[id]` — SSG, only for the 20 demo games in `mockGameLibrary`. IDs like `stardew-valley`.
+- `/game/[id]` — SSG, only for the demo games in `mockGameLibrary` (22 at time of writing). IDs like `stardew-valley`.
 - `/steam/[appid]` — client-only, reads `localStorage`. IDs are numeric Steam app IDs.
 
 `GameCard` and `AppUsageList` route to `/steam/[appid]` when `game.id.startsWith("steam-")`, otherwise `/game/[id]`.

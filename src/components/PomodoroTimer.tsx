@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const MODES = {
   focus: { label: "Focus", minutes: 25 },
@@ -16,23 +16,41 @@ const COLOR: Record<Mode, { ring: string; btn: string; badge: string }> = {
   longBreak: { ring: "#a78bfa", btn: "bg-violet-500 hover:bg-violet-600", badge: "bg-violet-50 text-violet-700" },
 };
 
-function playChime() {
+interface SessionEntry {
+  ts: number;
+  mode: Mode;
+  minutes: number;
+}
+
+// Reuse a single AudioContext across chimes — creating one per completion leaks
+// contexts and browsers cap how many can exist at once.
+let sharedCtx: AudioContext | null = null;
+function getAudioContext(): AudioContext | null {
   try {
-    const ctx = new AudioContext();
-    [523.25, 659.25, 783.99].forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      const t = ctx.currentTime + i * 0.18;
-      gain.gain.setValueAtTime(0.25, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-      osc.start(t);
-      osc.stop(t + 0.6);
-    });
-  } catch {}
+    if (!sharedCtx) sharedCtx = new AudioContext();
+    if (sharedCtx.state === "suspended") sharedCtx.resume();
+    return sharedCtx;
+  } catch {
+    return null;
+  }
+}
+
+function playChime() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  [523.25, 659.25, 783.99].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const t = ctx.currentTime + i * 0.18;
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+    osc.start(t);
+    osc.stop(t + 0.6);
+  });
 }
 
 function sendNotification(body: string) {
@@ -42,11 +60,46 @@ function sendNotification(body: string) {
   }
 }
 
+function startOfToday(): number {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+// Count today's completed focus sessions from persisted history, so the badge
+// survives reloads and resets naturally at midnight.
+function countTodayFocus(): number {
+  try {
+    const raw = localStorage.getItem("tranquil-sessions");
+    if (!raw) return 0;
+    const hist: SessionEntry[] = JSON.parse(raw);
+    const since = startOfToday();
+    return hist.filter((e) => e.mode === "focus" && e.ts >= since).length;
+  } catch {
+    return 0;
+  }
+}
+
+function recordSession(entry: SessionEntry) {
+  try {
+    const raw = localStorage.getItem("tranquil-sessions");
+    const hist: SessionEntry[] = raw ? JSON.parse(raw) : [];
+    hist.unshift(entry);
+    if (hist.length > 500) hist.length = 500;
+    localStorage.setItem("tranquil-sessions", JSON.stringify(hist));
+    document.dispatchEvent(new CustomEvent("tranquil-session-saved"));
+  } catch {}
+}
+
 export default function PomodoroTimer() {
   const [mode, setMode] = useState<Mode>("focus");
   const [secondsLeft, setSecondsLeft] = useState(MODES.focus.minutes * 60);
   const [running, setRunning] = useState(false);
   const [sessions, setSessions] = useState(0);
+  // Absolute wall-clock time the current run should end. This makes the
+  // countdown accurate even when the tab is backgrounded and setInterval is
+  // throttled — we always derive the remaining time from the clock.
+  const endTimeRef = useRef<number | null>(null);
 
   const total = MODES[mode].minutes * 60;
   const c = COLOR[mode];
@@ -54,56 +107,61 @@ export default function PomodoroTimer() {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - secondsLeft / total);
 
+  useEffect(() => {
+    setSessions(countTodayFocus());
+    const refresh = () => setSessions(countTodayFocus());
+    document.addEventListener("tranquil-session-saved", refresh);
+    return () => document.removeEventListener("tranquil-session-saved", refresh);
+  }, []);
+
   const switchMode = (m: Mode) => {
     setMode(m);
     setRunning(false);
+    endTimeRef.current = null;
     setSecondsLeft(MODES[m].minutes * 60);
   };
 
   const handleStart = () => {
-    if (!running && typeof Notification !== "undefined" && Notification.permission === "default") {
-      Notification.requestPermission();
+    if (!running) {
+      if (typeof Notification !== "undefined" && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+      endTimeRef.current = Date.now() + secondsLeft * 1000;
+      setRunning(true);
+    } else {
+      // Pause: secondsLeft already holds the last computed value.
+      endTimeRef.current = null;
+      setRunning(false);
     }
-    setRunning((r) => !r);
   };
+
+  const complete = useCallback((finishedMode: Mode) => {
+    endTimeRef.current = null;
+    setRunning(false);
+    setSecondsLeft(MODES[finishedMode].minutes * 60);
+    recordSession({ ts: Date.now(), mode: finishedMode, minutes: MODES[finishedMode].minutes });
+    sendNotification(
+      finishedMode === "focus"
+        ? "Focus session complete! Time for a break."
+        : "Break over — ready to focus again?"
+    );
+  }, []);
 
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          setRunning(false);
-          if (mode === "focus") {
-            setSessions((n) => n + 1);
-            try {
-              const entry = { ts: Date.now(), mode: "focus", minutes: MODES.focus.minutes };
-              const raw = localStorage.getItem("tranquil-sessions");
-              const hist: typeof entry[] = raw ? JSON.parse(raw) : [];
-              hist.unshift(entry);
-              if (hist.length > 500) hist.length = 500;
-              localStorage.setItem("tranquil-sessions", JSON.stringify(hist));
-              document.dispatchEvent(new CustomEvent("tranquil-session-saved"));
-            } catch {}
-            sendNotification("Focus session complete! Time for a break.");
-          } else {
-            try {
-              const entry = { ts: Date.now(), mode, minutes: MODES[mode].minutes };
-              const raw = localStorage.getItem("tranquil-sessions");
-              const hist: typeof entry[] = raw ? JSON.parse(raw) : [];
-              hist.unshift(entry);
-              if (hist.length > 500) hist.length = 500;
-              localStorage.setItem("tranquil-sessions", JSON.stringify(hist));
-              document.dispatchEvent(new CustomEvent("tranquil-session-saved"));
-            } catch {}
-            sendNotification("Break over — ready to focus again?");
-          }
-          return MODES[mode].minutes * 60;
-        }
-        return s - 1;
-      });
-    }, 1000);
+    const tick = () => {
+      if (endTimeRef.current == null) return;
+      const remaining = Math.round((endTimeRef.current - Date.now()) / 1000);
+      if (remaining <= 0) {
+        complete(mode);
+      } else {
+        setSecondsLeft(remaining);
+      }
+    };
+    tick(); // reconcile immediately (e.g. after returning to a backgrounded tab)
+    const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [running, mode]);
+  }, [running, mode, complete]);
 
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const secs = String(secondsLeft % 60).padStart(2, "0");
@@ -143,7 +201,7 @@ export default function PomodoroTimer() {
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             transform="rotate(-90 70 70)"
-            style={{ transition: running ? "stroke-dashoffset 1s linear" : "none" }}
+            style={{ transition: running ? "stroke-dashoffset 0.25s linear" : "none" }}
           />
           <text x="70" y="63" textAnchor="middle" dominantBaseline="middle" fontSize="26" fontWeight="700" fill="var(--svg-text-primary)">
             {mins}:{secs}
