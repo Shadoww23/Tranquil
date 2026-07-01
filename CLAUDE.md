@@ -36,7 +36,7 @@ The core of the product. Four pure functions, all unit-tested:
 
 | File | Export | Purpose |
 |---|---|---|
-| `predatoryScore.ts` | `calculateDesignRiskScore(game)` | Weighted sum of mechanics flags → 0–100 |
+| `predatoryScore.ts` | `calculateDesignRiskScore(game)` | Severity-weighted risk → 0–100. Scores by *harm*, not presence: direct-purchase mechanics scale by `mechanics.monetizationImpact` (`none`/`cosmetic`/`convenience`/`power`) so cosmetic live-service ≠ pay-to-win. Returns `factors[]` (points + reason) and `confidence` (`low` when `mechanics.source === "inferred"`). See `docs/scoring-model.md`. |
 | `joyIndex.ts` | `calculateJoyIndex(game, riskScore)` | `communityScore × 0.8 − risk × 0.3`, clamped 0–100 |
 | `habitLoop.ts` | `detectHabitPatterns(game)` | Returns `DetectedPattern[]` with severity |
 | `recommendations.ts` | `generateRecommendation(risk, joy)` | Verdict: `healthy / mindful / caution / red-flag` |
@@ -123,7 +123,8 @@ The Header listens for this in a `useEffect`. Similarly, `PomodoroTimer` dispatc
 
 - `Game` — base game object including `mechanics: GameMechanics` and optional `steamAppId?: number`
 - `AnalyzedGame extends Game` — adds `designRiskScore`, `joyIndex`, `detectedPatterns`, `recommendation`
-- `DesignRiskScore` — `{ total, breakdown: { monetization, manipulation, compulsion }, flags[] }`
+- `DesignRiskScore` — `{ total, breakdown: { monetization, manipulation, compulsion }, flags[], factors[], confidence }`. `factors[]` are `{ label, category, points, reason }` (the "why"); `confidence` is `"high"`/`"low"`.
+- `GameMechanics` also carries optional `monetizationImpact` (the key severity fact) and `source` (`"verified"`/`"inferred"`, drives confidence)
 
 ### Tests
 

@@ -7,6 +7,7 @@ import { calculateDesignRiskScore, calculateJoyIndex, detectHabitPatterns, gener
 import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
+import { ConfidenceBadge, RiskFactorList } from "@/components/RiskFactors";
 import Header from "@/components/Header";
 import type { Game } from "@/lib/types";
 
@@ -92,7 +93,10 @@ export default function SteamGamePage({ params }: { params: Promise<{ appid: str
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-3">Design Risk Score</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">Design Risk Score</p>
+              <ConfidenceBadge confidence={designRiskScore.confidence} />
+            </div>
             <p className={`text-4xl font-bold tabular-nums ${riskColor(designRiskScore.total)}`}>{designRiskScore.total}<span className="text-lg font-normal text-stone-400">/100</span></p>
             <p className="text-xs text-stone-400 dark:text-stone-500 mt-1 mb-4">{designRiskScore.flags.length} concern pattern{designRiskScore.flags.length !== 1 ? "s" : ""} detected</p>
             <RiskBreakdownBar score={designRiskScore} />
@@ -139,14 +143,19 @@ export default function SteamGamePage({ params }: { params: Promise<{ appid: str
           </div>
         )}
 
-        {designRiskScore.flags.length > 0 && (
-          <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
-            <h2 className="font-semibold text-stone-800 dark:text-stone-100 mb-3">Scoring Flags</h2>
-            <div className="flex flex-wrap gap-2">
-              {designRiskScore.flags.map((flag) => <span key={flag} className="text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 px-2.5 py-1 rounded-full">{flag}</span>)}
-            </div>
+        <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-stone-800 dark:text-stone-100">Why this score</h2>
+            <ConfidenceBadge confidence={designRiskScore.confidence} />
           </div>
-        )}
+          <RiskFactorList score={designRiskScore} />
+          {designRiskScore.confidence === "low" && (
+            <p className="text-xs text-stone-400 dark:text-stone-500 mt-4 pt-3 border-t border-stone-100 dark:border-stone-700">
+              This game was analysed from its Steam store listing, so its mechanics are an estimate.
+              Curated games use hand-verified data.
+            </p>
+          )}
+        </div>
       </main>
       <footer className="text-center text-xs text-stone-300 dark:text-stone-700 pb-8 pt-4">Anti-FOMO · Evidence-based gaming insights · Open source</footer>
     </div>

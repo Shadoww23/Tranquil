@@ -1,4 +1,4 @@
-import type { Game } from "./types";
+import type { Game, MonetizationImpact } from "./types";
 
 export const mockGameLibrary: Game[] = [
   {
@@ -686,3 +686,30 @@ export const mockGameLibrary: Game[] = [
     communityScore: 78,
   },
 ];
+
+// What real-money purchases actually buy in each monetised demo game — the
+// factual signal the risk engine uses to separate cosmetic spending from
+// pay-for-power. Games not listed here have no monetisation (impact "none").
+// Classifications are based on each game's live storefront at time of writing:
+//   cosmetic    — skins/visuals only, zero gameplay advantage
+//   convenience — time-savers, no competitive power
+//   power       — purchases affect gameplay, progression, or competition
+const MONETIZATION_IMPACT: Record<string, MonetizationImpact> = {
+  "rocket-league": "cosmetic",
+  fortnite: "cosmetic",
+  "apex-legends": "cosmetic",
+  "genshin-impact": "power",
+  "ea-fc-25": "power",
+  "diablo-immortal": "power",
+  "among-us": "cosmetic",
+  valorant: "cosmetic",
+  "league-of-legends": "cosmetic",
+  "pokemon-go": "convenience",
+  "candy-crush-saga": "power",
+  "fall-guys": "cosmetic",
+};
+
+for (const game of mockGameLibrary) {
+  const impact = MONETIZATION_IMPACT[game.id];
+  if (impact) game.mechanics.monetizationImpact = impact;
+}

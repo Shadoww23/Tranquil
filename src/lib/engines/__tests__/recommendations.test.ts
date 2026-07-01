@@ -3,7 +3,13 @@ import { generateRecommendation } from "../recommendations";
 import type { DesignRiskScore, JoyIndex } from "../../types";
 
 function makeScore(total: number): DesignRiskScore {
-  return { total, breakdown: { monetization: 0, manipulation: 0, compulsion: 0 }, flags: [] };
+  return {
+    total,
+    breakdown: { monetization: 0, manipulation: 0, compulsion: 0 },
+    flags: [],
+    factors: [],
+    confidence: "high",
+  };
 }
 
 function makeJoy(total: number): JoyIndex {

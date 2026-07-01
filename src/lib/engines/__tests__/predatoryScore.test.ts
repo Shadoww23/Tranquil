@@ -71,7 +71,7 @@ describe("calculateDesignRiskScore", () => {
     expect(result.breakdown.monetization).toBeGreaterThan(0);
   });
 
-  it("scores battle pass + FOMO events", () => {
+  it("scores cosmetic-only live-service mild (de-bias)", () => {
     const game: Game = {
       ...baseGame,
       mechanics: {
@@ -79,12 +79,67 @@ describe("calculateDesignRiskScore", () => {
         hasBattlePass: true,
         hasLimitedTimeEvents: true,
         hasMicrotransactions: true,
+        monetizationImpact: "cosmetic",
       },
     };
     const result = calculateDesignRiskScore(game);
     expect(result.flags).toContain("Battle Pass");
     expect(result.flags).toContain("FOMO Events");
-    expect(result.total).toBeGreaterThan(20);
+    // A cosmetic battle pass + shop + events should stay mild, not "caution".
+    expect(result.total).toBeLessThanOrEqual(15);
+  });
+
+  it("scores pay-for-power far higher than the same cosmetic mechanics", () => {
+    const shared = {
+      hasBattlePass: true,
+      hasMicrotransactions: true,
+      hasLimitedTimeEvents: true,
+    };
+    const cosmetic = calculateDesignRiskScore({
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, ...shared, monetizationImpact: "cosmetic" },
+    });
+    const power = calculateDesignRiskScore({
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, ...shared, monetizationImpact: "power" },
+    });
+    expect(power.total).toBeGreaterThan(cosmetic.total * 2);
+  });
+
+  it("weights gacha higher when it affects power, but counts it even when cosmetic", () => {
+    const cosmeticGacha = calculateDesignRiskScore({
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, hasGacha: true, monetizationImpact: "cosmetic" },
+    });
+    const powerGacha = calculateDesignRiskScore({
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, hasGacha: true, monetizationImpact: "power" },
+    });
+    expect(powerGacha.total).toBeGreaterThan(cosmeticGacha.total);
+    expect(cosmeticGacha.total).toBeGreaterThan(0);
+  });
+
+  it("marks inferred data low-confidence and verified data high-confidence", () => {
+    const verified = calculateDesignRiskScore(baseGame);
+    const inferred = calculateDesignRiskScore({
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, source: "inferred" },
+    });
+    expect(verified.confidence).toBe("high");
+    expect(inferred.confidence).toBe("low");
+  });
+
+  it("gives every factor points and a plain-language reason", () => {
+    const game: Game = {
+      ...baseGame,
+      mechanics: { ...baseGame.mechanics, hasPayToWin: true, hasEnergySystem: true },
+    };
+    const result = calculateDesignRiskScore(game);
+    expect(result.factors.length).toBeGreaterThan(0);
+    for (const f of result.factors) {
+      expect(f.points).toBeGreaterThan(0);
+      expect(f.reason.length).toBeGreaterThan(0);
+    }
   });
 
   it("returns breakdown with correct categories", () => {
