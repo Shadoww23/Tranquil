@@ -8,6 +8,7 @@ import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
 import { ConfidenceBadge, RiskFactorList } from "@/components/RiskFactors";
+import ForYouConcern from "@/components/ForYouConcern";
 import Header from "@/components/Header";
 import type { Game } from "@/lib/types";
 
@@ -114,6 +115,9 @@ export default function SteamGamePage({ params }: { params: Promise<{ appid: str
             <p className="text-xs opacity-80 leading-relaxed">{recommendation.detail}</p>
           </div>
         </div>
+
+        {/* Personalized "For you" layer */}
+        <ForYouConcern score={designRiskScore} />
 
         {recommendation.actions.length > 0 && (
           <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-5">

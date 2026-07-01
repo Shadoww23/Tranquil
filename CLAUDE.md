@@ -40,6 +40,7 @@ The core of the product. Four pure functions, all unit-tested:
 | `joyIndex.ts` | `calculateJoyIndex(game, riskScore)` | `communityScore × 0.8 − risk × 0.3`, clamped 0–100 |
 | `habitLoop.ts` | `detectHabitPatterns(game)` | Returns `DetectedPattern[]` with severity |
 | `recommendations.ts` | `generateRecommendation(risk, joy)` | Verdict: `healthy / mindful / caution / red-flag` |
+| `personalization.ts` | `personalizedConcern(score, profile)` / `nudgeProfile(...)` | **Per-user layer.** Re-weights the objective factors by the user's `PreferenceProfile` (5 `ConcernDimension`s) into a "For you" reading; `nudgeProfile` learns from 👍/👎 feedback. Never changes the objective score. A neutral profile returns exactly the objective total. |
 
 All four are re-exported from `src/lib/engines/index.ts`. The canonical type for the risk score is **`DesignRiskScore`** (not `PredatoryScore`).
 
@@ -73,7 +74,8 @@ userLibrary.ts (localStorage CRUD)
   ├─ tranquil-steam-api-key → user's Steam Web API key (Tier 2 only)
   ├─ tranquil-steam-id      → resolved 64-bit Steam ID
   ├─ tranquil-sessions      → SessionEntry[] (focus timer history)
-  └─ tranquil-intention     → string (daily intention text)
+  ├─ tranquil-intention     → string (daily intention text)
+  └─ tranquil-preferences   → PreferenceProfile (per-user concern sensitivities)
 ```
 
 **Key model:** In Tier 1, the app's own `STEAM_API_KEY` lives server-side (env var) and is used for every user — no *user* secret ever touches the server. In Tier 2, the **user's** key is never stored server-side: it travels as `x-steam-key` header from client → API route → Steam, then is discarded, and only lives in their `localStorage`.

@@ -77,74 +77,79 @@ export function calculateDesignRiskScore(game: Game): DesignRiskScore {
   const add = (
     label: string,
     category: RiskFactor["category"],
+    dimension: RiskFactor["dimension"],
     points: number,
     reason: string
   ) => {
-    if (points > 0) factors.push({ label, category, points, reason });
+    if (points > 0) factors.push({ label, category, dimension, points, reason });
   };
+
+  // Direct-purchase mechanics count as pay-for-power when they sell power,
+  // otherwise as cosmetic spending.
+  const directDimension = impact === "power" ? "payForPower" : "cosmeticSpend";
 
   // --- Monetization ---
   if (m.hasPayToWin) {
-    add("Pay-to-Win", "monetization", W.payToWin,
+    add("Pay-to-Win", "monetization", "payForPower", W.payToWin,
       "Paying grants a direct gameplay or competitive advantage.");
   }
   if (m.hasGacha) {
     const power = impact === "power";
-    add("Gacha System", "monetization", W.gachaBase + (power ? W.gachaPowerBonus : 0),
+    add("Gacha System", "monetization", "randomized", W.gachaBase + (power ? W.gachaPowerBonus : 0),
       power
         ? "Randomised paid pulls for characters/gear that affect power."
         : "Randomised paid pulls — gambling-like mechanics, cosmetic outcomes.");
   }
   if (m.hasLootBoxes) {
     const power = impact === "power";
-    add("Loot Boxes", "monetization", W.lootBoxesBase + (power ? W.lootBoxesPowerBonus : 0),
+    add("Loot Boxes", "monetization", "randomized", W.lootBoxesBase + (power ? W.lootBoxesPowerBonus : 0),
       power
         ? "Randomised paid containers that can affect gameplay."
         : "Randomised paid containers — gambling-like mechanics, cosmetic outcomes.");
   }
   if (m.hasBattlePass) {
-    add("Battle Pass", "monetization", DIRECT_PURCHASE.battlePass[impact],
+    add("Battle Pass", "monetization", directDimension, DIRECT_PURCHASE.battlePass[impact],
       directPurchaseReason("A battle pass", impact));
   }
   if (m.hasSeasonPass) {
-    add("Season Pass", "monetization", DIRECT_PURCHASE.seasonPass[impact],
+    add("Season Pass", "monetization", directDimension, DIRECT_PURCHASE.seasonPass[impact],
       directPurchaseReason("A season pass", impact));
   }
   if (m.hasMicrotransactions) {
-    add("Microtransactions", "monetization", DIRECT_PURCHASE.microtransactions[impact],
+    add("Microtransactions", "monetization", directDimension, DIRECT_PURCHASE.microtransactions[impact],
       directPurchaseReason("In-game purchases", impact));
   }
   if (m.hasAds) {
-    add("In-Game Ads", "monetization", W.ads,
+    add("In-Game Ads", "monetization", "cosmeticSpend", W.ads,
       "Advertising interrupts play or pressures purchases to remove it.");
   }
   const dlcPoints = Math.min(m.dlcCount * W.dlcPerTitle, W.maxDlcPoints);
   if (dlcPoints > 0) {
-    add("Paid DLC", "monetization", dlcPoints,
+    add("Paid DLC", "monetization", "cosmeticSpend", dlcPoints,
       `${m.dlcCount} paid add-on${m.dlcCount !== 1 ? "s" : ""} beyond the base game.`);
   }
 
   // --- Manipulation ---
   if (m.hasLimitedTimeEvents) {
     const spend = impact === "power" || impact === "convenience";
-    add("FOMO Events", "manipulation",
+    add("FOMO Events", "manipulation", "fomo",
       W.limitedTimeEventsBase + (spend ? W.limitedTimeEventsSpendBonus : 0),
       spend
         ? "Time-limited content tied to spending pressure."
         : "Time-limited content — mild fear-of-missing-out, cosmetic stakes.");
   }
   if (m.hasSocialPressure) {
-    add("Social Pressure", "manipulation", W.socialPressure,
+    add("Social Pressure", "manipulation", "fomo", W.socialPressure,
       "Competitive/social mechanics can create obligation to keep playing.");
   }
 
   // --- Compulsion ---
   if (m.hasEnergySystem) {
-    add("Energy System", "compulsion", W.energySystem,
+    add("Energy System", "compulsion", "timeGate", W.energySystem,
       "Artificial play limits pressure you to wait or pay to continue.");
   }
   if (m.hasDailyLoginBonus) {
-    add("Daily Login Bonus", "compulsion", W.dailyLoginBonus,
+    add("Daily Login Bonus", "compulsion", "timeGate", W.dailyLoginBonus,
       "Daily rewards nudge habitual logins regardless of genuine desire.");
   }
 

@@ -42,14 +42,32 @@ export interface Game {
   steamAppId?: number;
 }
 
+// The kinds of concern a player can be more or less sensitive to. Used by the
+// per-user personalization layer to weight the objective factors — the facts
+// themselves never change, only how much *this* user cares about each.
+export type ConcernDimension =
+  | "payForPower"
+  | "randomized"
+  | "cosmeticSpend"
+  | "fomo"
+  | "timeGate";
+
 // A single scored mechanic, with the points it contributed and a plain-language
 // reason — so a score can always explain itself rather than looking like a
 // black box.
 export interface RiskFactor {
   label: string;
   category: "monetization" | "manipulation" | "compulsion";
+  dimension: ConcernDimension;
   points: number;
   reason: string;
+}
+
+// A user's personal sensitivities, stored locally. weight 1 = neutral, <1 =
+// cares less, >1 = cares more. This drives the "For you" layer only.
+export interface PreferenceProfile {
+  weights: Record<ConcernDimension, number>;
+  updatedAt: string;
 }
 
 export interface DesignRiskScore {
