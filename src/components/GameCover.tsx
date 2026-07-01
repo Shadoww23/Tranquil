@@ -54,7 +54,10 @@ export default function GameCover({ game, className = "" }: Props) {
       aria-hidden
       loading="lazy"
       onError={() => setIdx((i) => i + 1)}
-      className={`object-cover object-center bg-stone-200 dark:bg-stone-700 ${className}`}
+      // object-contain guarantees the whole banner (logo + art) is always in
+      // frame — never cropped. The subtle bg fills any letterbox space and
+      // blends with the card behind it.
+      className={`object-contain bg-stone-100 dark:bg-stone-800 ${className}`}
     />
   );
 }
