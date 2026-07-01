@@ -83,6 +83,8 @@ export const CURATED_APPIDS: Record<number, string> = {
   32370: "kotor",
   435150: "divinity-original-sin-2",
   1097150: "fall-guys",
+  1245620: "elden-ring",
+  945360: "among-us",
 };
 
 const COVER_COLORS = [

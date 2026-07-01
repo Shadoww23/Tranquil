@@ -84,7 +84,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3 rounded-2xl bg-stone-100 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 px-4 py-3">
-            <p className="text-sm text-stone-500 dark:text-stone-400"><span className="font-medium text-stone-700 dark:text-stone-300">Demo mode</span> — showing 20 example games.</p>
+            <p className="text-sm text-stone-500 dark:text-stone-400"><span className="font-medium text-stone-700 dark:text-stone-300">Demo mode</span> — showing {mockGameLibrary.length} example games.</p>
             <Link href="#" onClick={(e) => { e.preventDefault(); document.dispatchEvent(new CustomEvent("open-steam-connect")); }} className="text-xs font-semibold text-sky-500 hover:text-sky-700 dark:hover:text-sky-300 transition-colors shrink-0">Connect Steam →</Link>
           </div>
         )}
