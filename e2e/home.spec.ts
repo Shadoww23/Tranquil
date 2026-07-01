@@ -10,9 +10,10 @@ test.describe("Home", () => {
     // Personalized recommendations section.
     await expect(page.getByRole("heading", { name: "Recommended for you" })).toBeVisible();
 
-    // Headline stats.
-    await expect(page.getByText("Avg Design Risk Score")).toBeVisible();
-    await expect(page.getByText("Avg Joy Index")).toBeVisible();
+    // Headline stats (these labels also appear in the health summary, so scope
+    // to the first match).
+    await expect(page.getByText("Avg Design Risk Score").first()).toBeVisible();
+    await expect(page.getByText("Avg Joy Index").first()).toBeVisible();
 
     // The library itself.
     await expect(page.getByRole("heading", { name: "Your Library" })).toBeVisible();
