@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest) {
+  // Protects the app-owned STEAM_API_KEY (Tier 1) from a single client burning
+  // its Steam quota. One import calls this once, so 20/min per IP is generous.
+  if (!rateLimit(`library:${clientIp(req)}`, 20, 60_000)) {
+    return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
+  }
+
   // Tier 1 (Sign in through Steam) sends no key and relies on the app's own
   // server-side STEAM_API_KEY. Tier 2 (manual) supplies the user's key via header.
   const apiKey = req.headers.get("x-steam-key") || process.env.STEAM_API_KEY;
@@ -8,6 +15,11 @@ export async function GET(req: NextRequest) {
 
   if (!apiKey || !steamId) {
     return NextResponse.json({ error: "Missing API key or Steam ID" }, { status: 400 });
+  }
+
+  // A SteamID64 is exactly 17 digits — reject anything else before hitting Steam.
+  if (!/^\d{17}$/.test(steamId)) {
+    return NextResponse.json({ error: "Invalid Steam ID." }, { status: 400 });
   }
 
   const url = new URL("https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/");
