@@ -1,5 +1,6 @@
 import type { Game, PreferenceProfile } from "./types";
-import { defaultProfile } from "./engines/personalization";
+import { defaultProfile, deriveProfileFromLibrary } from "./engines/personalization";
+import { calculateDesignRiskScore } from "./engines/predatoryScore";
 
 const LIBRARY_KEY = "tranquil-user-library";
 const STEAM_KEY_KEY = "tranquil-steam-api-key";
@@ -73,6 +74,7 @@ export function getPreferences(): PreferenceProfile {
     return {
       weights: { ...base.weights, ...(parsed.weights ?? {}) },
       updatedAt: parsed.updatedAt ?? base.updatedAt,
+      source: parsed.source ?? base.source,
     };
   } catch {
     return defaultProfile();
@@ -88,5 +90,22 @@ export function savePreferences(profile: PreferenceProfile): void {
 export function clearPreferences(): void {
   try {
     localStorage.removeItem(PREFERENCES_KEY);
+  } catch {}
+}
+
+/**
+ * Seed the preference profile from the user's real library the first time we see
+ * one, so the "For you" reading is meaningful immediately. Never overwrites an
+ * existing profile — explicit settings and feedback always win.
+ */
+export function ensureProfileSeeded(games: Game[]): void {
+  try {
+    if (localStorage.getItem(PREFERENCES_KEY)) return;
+    if (games.length === 0) return;
+    const entries = games.map((g) => ({
+      hoursPlayed: g.hoursPlayed,
+      score: calculateDesignRiskScore(g),
+    }));
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(deriveProfileFromLibrary(entries)));
   } catch {}
 }
