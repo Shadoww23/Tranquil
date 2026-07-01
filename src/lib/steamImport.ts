@@ -72,69 +72,86 @@ export async function importSteamLibrary(
 
   const sorted = [...owned]
     .sort((a, b) => b.playtime_forever - a.playtime_forever)
-    .slice(0, 150);
+    .slice(0, MAX_IMPORT_GAMES);
 
-  const games: Game[] = [];
-  let analyzed = 0;
+  // Analyse games with bounded concurrency. Doing this sequentially means one
+  // network round-trip per played game (slow, and enough of them can trip
+  // Steam's store rate limit, silently degrading later games to defaults).
+  // A small pool keeps it fast while staying well under the rate limit.
+  const games: Game[] = new Array(sorted.length);
+  let completed = 0;
+  let next = 0;
 
-  for (const sg of sorted) {
-    analyzed++;
-    onProgress("Analyzing games…", analyzed, sorted.length);
-
-    const hoursPlayed = Math.round(sg.playtime_forever / 60);
-    const curatedId = CURATED_APPIDS[sg.appid];
-
-    if (curatedId) {
-      const curated = mockGameLibrary.find((g) => g.id === curatedId);
-      if (curated) {
-        games.push({ ...curated, hoursPlayed });
-        continue;
-      }
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= sorted.length) return;
+      games[i] = await processGame(sorted[i]);
+      completed++;
+      onProgress("Analyzing games…", completed, sorted.length);
     }
-
-    let mechanics = emptMechanics();
-    let communityScore = 72;
-    let genres: string[] = [];
-    let developer = "Unknown";
-    let publisher = "Unknown";
-
-    if (sg.playtime_forever > 0) {
-      try {
-        const detailRes = await fetch(`/api/steam/appdetails?appid=${sg.appid}`);
-        if (detailRes.ok) {
-          const detail: SteamAppData = await detailRes.json();
-          mechanics = inferMechanicsFromSteamData(detail);
-          genres = (detail.genres ?? []).map((g) => g.description).slice(0, 2);
-          developer = (detail.developers ?? ["Unknown"])[0];
-          publisher = (detail.publishers ?? [developer])[0];
-          if (detail.metacritic?.score) {
-            communityScore = detail.metacritic.score;
-          } else if (detail.is_free) {
-            communityScore = 68;
-          }
-        }
-      } catch {
-        // proceed with defaults
-      }
-    }
-
-    games.push({
-      id: `steam-${sg.appid}`,
-      title: sg.name,
-      platform: "Steam",
-      genre: genres.length > 0 ? genres : ["PC Game"],
-      developer,
-      publisher,
-      releaseYear: new Date().getFullYear(),
-      hoursPlayed,
-      lastPlayed: new Date().toISOString().split("T")[0],
-      price: 0,
-      coverColor: appIdToCoverColor(sg.appid),
-      mechanics,
-      communityScore,
-      steamAppId: sg.appid,
-    });
   }
 
+  await Promise.all(
+    Array.from({ length: Math.min(IMPORT_CONCURRENCY, sorted.length) }, worker)
+  );
+
   return games;
+}
+
+/** Maximum games imported, taken by descending playtime. */
+export const MAX_IMPORT_GAMES = 150;
+const IMPORT_CONCURRENCY = 5;
+
+async function processGame(sg: SteamOwnedGame): Promise<Game> {
+  const hoursPlayed = Math.round(sg.playtime_forever / 60);
+  const curatedId = CURATED_APPIDS[sg.appid];
+
+  if (curatedId) {
+    const curated = mockGameLibrary.find((g) => g.id === curatedId);
+    if (curated) return { ...curated, hoursPlayed };
+  }
+
+  let mechanics = emptMechanics();
+  let communityScore = 72;
+  let genres: string[] = [];
+  let developer = "Unknown";
+  let publisher = "Unknown";
+
+  if (sg.playtime_forever > 0) {
+    try {
+      const detailRes = await fetch(`/api/steam/appdetails?appid=${sg.appid}`);
+      if (detailRes.ok) {
+        const detail: SteamAppData = await detailRes.json();
+        mechanics = inferMechanicsFromSteamData(detail);
+        genres = (detail.genres ?? []).map((g) => g.description).slice(0, 2);
+        developer = (detail.developers ?? ["Unknown"])[0];
+        publisher = (detail.publishers ?? [developer])[0];
+        if (detail.metacritic?.score) {
+          communityScore = detail.metacritic.score;
+        } else if (detail.is_free) {
+          communityScore = 68;
+        }
+      }
+    } catch {
+      // proceed with defaults
+    }
+  }
+
+  return {
+    id: `steam-${sg.appid}`,
+    title: sg.name,
+    platform: "Steam",
+    genre: genres.length > 0 ? genres : ["PC Game"],
+    developer,
+    publisher,
+    releaseYear: new Date().getFullYear(),
+    hoursPlayed,
+    lastPlayed: new Date().toISOString().split("T")[0],
+    price: 0,
+    coverColor: appIdToCoverColor(sg.appid),
+    mechanics,
+    communityScore,
+    steamAppId: sg.appid,
+  };
 }
