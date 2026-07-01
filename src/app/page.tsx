@@ -7,6 +7,7 @@ import type { AnalyzedGame, Game } from "@/lib/types";
 import Link from "next/link";
 import Header from "@/components/Header";
 import PlayerHealthSummary from "@/components/PlayerHealthSummary";
+import RecommendedGames from "@/components/RecommendedGames";
 import GameLibrary from "@/components/GameLibrary";
 import StatCard from "@/components/StatCard";
 import WhatYouDidntMiss from "@/components/WhatYouDidntMiss";
@@ -91,6 +92,8 @@ export default function Home() {
         )}
 
         <PlayerHealthSummary games={games} />
+
+        <RecommendedGames library={games} hasRealLibrary={!!steamMeta} />
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard label="Avg Design Risk Score" value={`${avgRisk}/100`} sub="Lower is better" accent="bg-rose-50 dark:bg-rose-950/40"
