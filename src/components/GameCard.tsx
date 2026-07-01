@@ -38,7 +38,7 @@ export default function GameCard({ game }: Props) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <GameCover game={game} className="shrink-0 w-8 h-8 rounded-lg" />
+          <GameCover game={game} className="shrink-0 w-14 h-8 rounded-md" />
           <div className="min-w-0">
             <h3 className="font-semibold text-stone-800 dark:text-stone-100 truncate leading-tight">{game.title}</h3>
             <p className="text-xs text-stone-400 dark:text-stone-500 truncate">{game.genre.join(" · ")}</p>

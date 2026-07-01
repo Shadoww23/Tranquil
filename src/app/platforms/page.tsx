@@ -205,7 +205,7 @@ export default function PlatformsPage() {
                       : ""
                   }`}
                 >
-                  <GameCover game={game} className="w-7 h-7 rounded-lg shrink-0" />
+                  <GameCover game={game} className="w-12 h-7 rounded-md shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-stone-800 dark:text-stone-100 truncate">
                       {game.title}

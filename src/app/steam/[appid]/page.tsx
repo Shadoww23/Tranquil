@@ -73,7 +73,7 @@ export default function SteamGamePage({ params }: { params: Promise<{ appid: str
 
         <div className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-6">
           <div className="flex items-start gap-4">
-            <GameCover game={game} className="shrink-0 w-16 h-16 rounded-2xl" />
+            <GameCover game={game} className="shrink-0 w-32 h-[74px] rounded-xl" />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h1 className="text-xl font-semibold text-stone-800 dark:text-stone-100">{game.title}</h1>
