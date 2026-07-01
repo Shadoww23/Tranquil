@@ -11,6 +11,7 @@ import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
 import { ConfidenceBadge, RiskFactorList } from "@/components/RiskFactors";
+import ForYouConcern from "@/components/ForYouConcern";
 import Header from "@/components/Header";
 
 const verdictStyles = {
@@ -138,6 +139,9 @@ export default async function GameDetailPage({ params }: Props) {
             <p className="text-xs opacity-80 leading-relaxed">{recommendation.detail}</p>
           </div>
         </div>
+
+        {/* Personalized "For you" layer */}
+        <ForYouConcern score={designRiskScore} />
 
         {/* Recommended actions */}
         {recommendation.actions.length > 0 && (

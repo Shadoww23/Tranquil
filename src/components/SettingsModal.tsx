@@ -1,7 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getStoredLibrary, clearLibrary } from "@/lib/userLibrary";
+import {
+  getStoredLibrary,
+  clearLibrary,
+  getPreferences,
+  savePreferences,
+  clearPreferences,
+} from "@/lib/userLibrary";
+import {
+  DIMENSIONS,
+  DIMENSION_META,
+  SENSITIVITY_LEVELS,
+  defaultProfile,
+  weightToLevel,
+} from "@/lib/engines";
+import type { ConcernDimension, PreferenceProfile } from "@/lib/types";
 import { useModalDismiss } from "@/lib/useModalDismiss";
 
 interface Props {
@@ -18,6 +32,7 @@ export default function SettingsModal({ open, onClose }: Props) {
   const [steamId, setSteamId] = useState<string | null>(null);
   const [gameCount, setGameCount] = useState(0);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [profile, setProfile] = useState<PreferenceProfile>(() => defaultProfile());
 
   useEffect(() => {
     setMounted(true);
@@ -32,7 +47,17 @@ export default function SettingsModal({ open, onClose }: Props) {
     setSteamId(lib?.meta.steamId ?? null);
     setGameCount(lib?.meta.gameCount ?? 0);
     setShowClearConfirm(false);
+    setProfile(getPreferences());
   }, [open, mounted]);
+
+  const setSensitivity = (dim: ConcernDimension, weight: number) => {
+    const next: PreferenceProfile = {
+      weights: { ...profile.weights, [dim]: weight },
+      updatedAt: new Date().toISOString(),
+    };
+    setProfile(next);
+    savePreferences(next);
+  };
 
   useModalDismiss(onClose, open && mounted);
 
@@ -78,6 +103,7 @@ export default function SettingsModal({ open, onClose }: Props) {
 
   const handleClearAll = () => {
     clearLibrary();
+    clearPreferences();
     localStorage.removeItem("tranquil-sessions");
     localStorage.removeItem("tranquil-intention");
     setShowClearConfirm(false);
@@ -151,6 +177,48 @@ export default function SettingsModal({ open, onClose }: Props) {
                   {label}
                 </button>
               ))}
+            </div>
+          </section>
+
+          {/* What matters to you — drives the "For you" concern layer */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1">
+              What matters to you
+            </p>
+            <p className="text-xs text-stone-400 dark:text-stone-500 mb-3">
+              Personalises the &ldquo;For you&rdquo; reading on each game. Objective scores never change.
+            </p>
+            <div className="space-y-3">
+              {DIMENSIONS.map((dim) => {
+                const current = weightToLevel(profile.weights[dim]);
+                return (
+                  <div key={dim}>
+                    <div className="flex items-baseline justify-between mb-1">
+                      <span className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                        {DIMENSION_META[dim].label}
+                      </span>
+                      <span className="text-[11px] text-stone-400 dark:text-stone-500 truncate ml-2">
+                        {DIMENSION_META[dim].description}
+                      </span>
+                    </div>
+                    <div className="flex gap-1 bg-stone-100 dark:bg-stone-700/60 rounded-lg p-0.5">
+                      {SENSITIVITY_LEVELS.map((lvl) => (
+                        <button
+                          key={lvl.key}
+                          onClick={() => setSensitivity(dim, lvl.weight)}
+                          className={`flex-1 text-[11px] font-medium py-1 rounded-md transition-colors ${
+                            current === lvl.key
+                              ? "bg-white dark:bg-stone-600 text-violet-600 dark:text-violet-300 shadow-sm"
+                              : "text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300"
+                          }`}
+                        >
+                          {lvl.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
