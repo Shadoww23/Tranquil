@@ -3,12 +3,10 @@
 import { useState } from "react";
 import type { Game } from "@/lib/types";
 
-// Candidate cover images for a Steam appid, best-fitting first. The portrait
-// "library" capsule is box art (2:3) that crops into a square cleanly; the wide
-// header is a fallback for games that lack library art.
+// The wide header capsule (460×215) — the game's banner with its logo, meant to
+// be shown in a landscape thumbnail. Near-universally available.
 export function steamCoverUrls(appid: number): string[] {
-  const base = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}`;
-  return [`${base}/library_600x900.jpg`, `${base}/header.jpg`];
+  return [`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`];
 }
 
 type CoverGame = Pick<Game, "coverColor" | "steamAppId" | "coverImage" | "title">;

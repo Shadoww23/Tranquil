@@ -84,7 +84,7 @@ export default function RecommendedGames({ library, hasRealLibrary }: Props) {
               className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-4 flex flex-col gap-2.5 hover:border-violet-200 dark:hover:border-violet-800 hover:shadow-md transition-all"
             >
               <div className="flex items-start gap-2">
-                <GameCover game={game} className="shrink-0 w-8 h-8 rounded-lg" />
+                <GameCover game={game} className="shrink-0 w-16 h-8 rounded-md" />
                 <div className="min-w-0 flex-1">
                   <h3 className="font-semibold text-stone-800 dark:text-stone-100 truncate leading-tight text-sm">{game.title}</h3>
                   <p className="text-xs text-stone-400 dark:text-stone-500 truncate">{game.genre.join(" · ")}</p>
