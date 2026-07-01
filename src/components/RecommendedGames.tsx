@@ -81,31 +81,31 @@ export default function RecommendedGames({ library, hasRealLibrary }: Props) {
             <Link
               key={game.id}
               href={href}
-              className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm p-4 flex flex-col gap-2.5 hover:border-violet-200 dark:hover:border-violet-800 hover:shadow-md transition-all"
+              className="rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-sm overflow-hidden flex flex-col hover:border-violet-200 dark:hover:border-violet-800 hover:shadow-md transition-all"
             >
-              <div className="flex items-start gap-2">
-                <GameCover game={game} className="shrink-0 w-16 h-8 rounded-md" />
-                <div className="min-w-0 flex-1">
+              <GameCover game={game} className="w-full h-24 border-b border-stone-100 dark:border-stone-700" />
+              <div className="p-4 flex flex-col gap-2.5 flex-1">
+                <div className="min-w-0">
                   <h3 className="font-semibold text-stone-800 dark:text-stone-100 truncate leading-tight text-sm">{game.title}</h3>
                   <p className="text-xs text-stone-400 dark:text-stone-500 truncate">{game.genre.join(" · ")}</p>
                 </div>
-              </div>
 
-              <span className="self-start text-[11px] font-medium px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400">
-                {reason}
-              </span>
+                <span className="self-start text-[11px] font-medium px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400">
+                  {reason}
+                </span>
 
-              <div className="mt-auto flex items-center justify-between text-xs pt-1">
-                <span className={`font-semibold ${riskColor(game.designRiskScore.total)}`}>
-                  Risk {game.designRiskScore.total}
-                </span>
-                <span className={`font-semibold ${joyColor(game.joyIndex.total)}`}>
-                  Joy {game.joyIndex.total}
-                </span>
+                <div className="mt-auto flex items-center justify-between text-xs pt-1">
+                  <span className={`font-semibold ${riskColor(game.designRiskScore.total)}`}>
+                    Risk {game.designRiskScore.total}
+                  </span>
+                  <span className={`font-semibold ${joyColor(game.joyIndex.total)}`}>
+                    Joy {game.joyIndex.total}
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-400 dark:text-stone-500">
+                  For you: <span className="font-medium text-violet-500 dark:text-violet-400">{personal.label} concern</span>
+                </p>
               </div>
-              <p className="text-[11px] text-stone-400 dark:text-stone-500">
-                For you: <span className="font-medium text-violet-500 dark:text-violet-400">{personal.label} concern</span>
-              </p>
             </Link>
           );
         })}
