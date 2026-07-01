@@ -81,9 +81,16 @@ export function getPreferences(): PreferenceProfile {
   }
 }
 
+export const PREFERENCES_CHANGED_EVENT = "tranquil-preferences-changed";
+
 export function savePreferences(profile: PreferenceProfile): void {
   try {
     localStorage.setItem(PREFERENCES_KEY, JSON.stringify(profile));
+    // Let any mounted "For you" panels refresh immediately (e.g. after a
+    // preference change in Settings on the same page).
+    if (typeof document !== "undefined") {
+      document.dispatchEvent(new CustomEvent(PREFERENCES_CHANGED_EVENT));
+    }
   } catch {}
 }
 
@@ -106,6 +113,6 @@ export function ensureProfileSeeded(games: Game[]): void {
       hoursPlayed: g.hoursPlayed,
       score: calculateDesignRiskScore(g),
     }));
-    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(deriveProfileFromLibrary(entries)));
+    savePreferences(deriveProfileFromLibrary(entries));
   } catch {}
 }

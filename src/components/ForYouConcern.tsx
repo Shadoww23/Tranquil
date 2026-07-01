@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { DesignRiskScore, PreferenceProfile } from "@/lib/types";
 import { personalizedConcern, nudgeProfile, DIMENSION_META } from "@/lib/engines";
-import { getPreferences, savePreferences } from "@/lib/userLibrary";
+import { getPreferences, savePreferences, PREFERENCES_CHANGED_EVENT } from "@/lib/userLibrary";
 import { riskColor } from "@/lib/colorUtils";
 
 // The personal layer, shown alongside the objective Design Risk Score. It reads
@@ -14,7 +14,16 @@ export default function ForYouConcern({ score }: { score: DesignRiskScore }) {
   const [reacted, setReacted] = useState<"fine" | "bothers" | null>(null);
 
   useEffect(() => {
-    setProfile(getPreferences());
+    const reload = () => setProfile(getPreferences());
+    reload();
+    // Stay in sync if preferences change elsewhere (Settings on the same page,
+    // or another tab).
+    document.addEventListener(PREFERENCES_CHANGED_EVENT, reload);
+    window.addEventListener("storage", reload);
+    return () => {
+      document.removeEventListener(PREFERENCES_CHANGED_EVENT, reload);
+      window.removeEventListener("storage", reload);
+    };
   }, []);
 
   if (!profile) {
