@@ -10,6 +10,8 @@ type SessionEntry = {
 
 export default function FocusTimeline() {
   const [mounted, setMounted] = useState(false);
+  // Captured once on mount so render stays pure (no clock reads during render).
+  const [now, setNow] = useState(0);
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
 
   const reload = () => {
@@ -21,6 +23,7 @@ export default function FocusTimeline() {
 
   useEffect(() => {
     setMounted(true);
+    setNow(Date.now());
     reload();
   }, []);
 
@@ -40,14 +43,14 @@ export default function FocusTimeline() {
   if (!mounted) return null;
 
   const focusSessions = sessions.filter((s) => s.mode === "focus");
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
   const weekSessions = focusSessions.filter((s) => s.ts >= weekAgo);
   const totalMinutes = focusSessions.reduce((sum, s) => sum + s.minutes, 0);
   const weekMinutes = weekSessions.reduce((sum, s) => sum + s.minutes, 0);
 
   const days: { label: string; minutes: number }[] = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date();
+    const d = new Date(now);
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - i);
     const start = d.getTime();
@@ -177,7 +180,7 @@ export default function FocusTimeline() {
         <div className="flex flex-col gap-2">
           {recent.map((s, i) => {
             const d = new Date(s.ts);
-            const isToday = d.toDateString() === new Date().toDateString();
+            const isToday = d.toDateString() === new Date(now).toDateString();
             const timeLabel = isToday
               ? d.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })
               : d.toLocaleDateString("en", { month: "short", day: "numeric" });
