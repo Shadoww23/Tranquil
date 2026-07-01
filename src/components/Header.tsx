@@ -24,13 +24,28 @@ export default function Header({ onSteamImported }: Props) {
   const [showSteamConnect, setShowSteamConnect] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isSteamConnected, setIsSteamConnected] = useState(false);
+  const [steamReturn, setSteamReturn] = useState<{ steamId?: string; error?: string }>({});
   const pathname = usePathname();
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
     setIsSteamConnected(!!getStoredLibrary());
 
-    const handler = () => setShowSteamConnect(true);
+    // Catch the redirect back from "Sign in through Steam".
+    const params = new URLSearchParams(window.location.search);
+    const steamConnect = params.get("steam_connect");
+    const steamError = params.get("steam_error");
+    if (steamConnect || steamError) {
+      setSteamReturn({ steamId: steamConnect ?? undefined, error: steamError ?? undefined });
+      setShowSteamConnect(true);
+      // Clean the params out of the URL so a refresh doesn't re-trigger.
+      params.delete("steam_connect");
+      params.delete("steam_error");
+      const qs = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+    }
+
+    const handler = () => { setSteamReturn({}); setShowSteamConnect(true); };
     document.addEventListener("open-steam-connect", handler);
     return () => document.removeEventListener("open-steam-connect", handler);
   }, []);
@@ -224,8 +239,10 @@ export default function Header({ onSteamImported }: Props) {
 
       {showSteamConnect && (
         <SteamConnect
-          onClose={() => setShowSteamConnect(false)}
+          onClose={() => { setShowSteamConnect(false); setSteamReturn({}); }}
           onImported={handleImported}
+          initialSteamId={steamReturn.steamId}
+          initialError={steamReturn.error}
         />
       )}
 

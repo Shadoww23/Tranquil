@@ -46,24 +46,37 @@ All four are re-exported from `src/lib/engines/index.ts`. The canonical type for
 ### Data flow
 
 ```
+Steam auth — two tiers (see steamOpenId.ts + SteamConnect.tsx)
+  ├─ Tier 1 "Sign in through Steam" (default)
+  │    ├─ /api/steam/login    → redirect to Steam OpenID 2.0 (needs process.env.STEAM_API_KEY)
+  │    └─ /api/steam/callback → verifyCallback() re-POSTs to Steam (check_authentication),
+  │                             then redirects to /?steam_connect=<steamid>
+  │       Header reads that param on mount → opens SteamConnect with initialSteamId
+  │       → auto-imports using the app-owned key (no user key)
+  └─ Tier 2 "Advanced" → user pastes their own key; sent as x-steam-key header
+
 Steam API (server-side proxy)
-  └─ /api/steam/library    → GetOwnedGames (requires x-steam-key header)
-  └─ /api/steam/resolve    → ResolveVanityURL (username → 64-bit Steam ID)
-  └─ /api/steam/appdetails → store.steampowered.com/api/appdetails (cached 1h)
+  └─ /api/steam/library    → GetOwnedGames (x-steam-key header OR process.env.STEAM_API_KEY)
+  │                          returns { ...response, private: bool } — private flags a
+  │                          locked "Game details" profile (empty response, no game_count)
+  └─ /api/steam/resolve    → ResolveVanityURL (x-steam-key header OR process.env.STEAM_API_KEY)
+  └─ /api/steam/appdetails → store.steampowered.com/api/appdetails (cached 1h, no key needed)
 
 steamImport.ts (client-side orchestrator)
+  ├─ apiKey param is OPTIONAL — omitted (Tier 1) → server uses process.env.STEAM_API_KEY
   ├─ Curated appids (CURATED_APPIDS in steamInference.ts) → use mockGameLibrary data, update hours only
-  └─ Other played games → fetch appdetails → inferMechanicsFromSteamData()
+  ├─ Other played games → fetch appdetails → inferMechanicsFromSteamData()
+  └─ Throws PrivateProfileError when libData.private → SteamConnect shows a fix-it card
 
 userLibrary.ts (localStorage CRUD)
   ├─ tranquil-user-library  → StoredLibrary (meta + games[])
-  ├─ tranquil-steam-api-key → user's Steam Web API key
+  ├─ tranquil-steam-api-key → user's Steam Web API key (Tier 2 only)
   ├─ tranquil-steam-id      → resolved 64-bit Steam ID
   ├─ tranquil-sessions      → SessionEntry[] (focus timer history)
   └─ tranquil-intention     → string (daily intention text)
 ```
 
-The Steam API key is **never stored server-side** — it travels as `x-steam-key` header from client → API route → Steam, then is discarded.
+**Key model:** In Tier 1, the app's own `STEAM_API_KEY` lives server-side (env var) and is used for every user — no *user* secret ever touches the server. In Tier 2, the **user's** key is never stored server-side: it travels as `x-steam-key` header from client → API route → Steam, then is discarded, and only lives in their `localStorage`.
 
 ### Page routing split
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const apiKey = req.headers.get("x-steam-key");
+  const apiKey = req.headers.get("x-steam-key") || process.env.STEAM_API_KEY;
   const vanity = req.nextUrl.searchParams.get("vanity");
 
   if (!apiKey || !vanity) {
