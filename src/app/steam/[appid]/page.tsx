@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { getStoredLibrary } from "@/lib/userLibrary";
-import { calculateDesignRiskScore, calculateJoyIndex, detectHabitPatterns, generateRecommendation } from "@/lib/engines";
+import { analyzeGame } from "@/lib/analyzeGame";
 import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
@@ -57,10 +57,7 @@ export default function SteamGamePage({ params }: { params: Promise<{ appid: str
     );
   }
 
-  const designRiskScore = calculateDesignRiskScore(game);
-  const joyIndex = calculateJoyIndex(game, designRiskScore);
-  const detectedPatterns = detectHabitPatterns(game);
-  const recommendation = generateRecommendation(designRiskScore, joyIndex);
+  const { designRiskScore, joyIndex, detectedPatterns, recommendation } = analyzeGame(game);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">

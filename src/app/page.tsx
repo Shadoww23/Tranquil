@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { mockGameLibrary } from "@/lib/data";
-import { calculateDesignRiskScore, calculateJoyIndex, detectHabitPatterns, generateRecommendation } from "@/lib/engines";
-import type { AnalyzedGame, Game } from "@/lib/types";
+import { analyzeGames } from "@/lib/analyzeGame";
+import type { AnalyzedGame } from "@/lib/types";
 import Link from "next/link";
 import Header from "@/components/Header";
 import PlayerHealthSummary from "@/components/PlayerHealthSummary";
@@ -15,16 +15,6 @@ import CalmScoreRing from "@/components/CalmScoreRing";
 import ScreenTimeChart from "@/components/ScreenTimeChart";
 import AppUsageList from "@/components/AppUsageList";
 import { getStoredLibrary, clearLibrary, ensureProfileSeeded, type LibraryMeta } from "@/lib/userLibrary";
-
-function analyzeGames(games: Game[]): AnalyzedGame[] {
-  return games.map((game) => {
-    const designRiskScore = calculateDesignRiskScore(game);
-    const joyIndex = calculateJoyIndex(game, designRiskScore);
-    const detectedPatterns = detectHabitPatterns(game);
-    const recommendation = generateRecommendation(designRiskScore, joyIndex);
-    return { ...game, designRiskScore, joyIndex, detectedPatterns, recommendation };
-  });
-}
 
 export default function Home() {
   const [games, setGames] = useState<AnalyzedGame[]>([]);

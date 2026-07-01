@@ -1,22 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { recommendGames } from "../recommend";
 import { mockGameLibrary } from "../data";
-import {
-  calculateDesignRiskScore,
-  calculateJoyIndex,
-  detectHabitPatterns,
-  generateRecommendation,
-  defaultProfile,
-} from "../engines";
-import type { AnalyzedGame, Game } from "../types";
-
-function analyze(game: Game): AnalyzedGame {
-  const designRiskScore = calculateDesignRiskScore(game);
-  const joyIndex = calculateJoyIndex(game, designRiskScore);
-  const detectedPatterns = detectHabitPatterns(game);
-  const recommendation = generateRecommendation(designRiskScore, joyIndex);
-  return { ...game, designRiskScore, joyIndex, detectedPatterns, recommendation };
-}
+import { defaultProfile } from "../engines";
+import { analyzeGame as analyze } from "../analyzeGame";
 
 const catalog = mockGameLibrary.map(analyze);
 

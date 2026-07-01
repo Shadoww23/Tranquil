@@ -1,12 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { mockGameLibrary } from "@/lib/data";
-import {
-  calculateDesignRiskScore,
-  calculateJoyIndex,
-  detectHabitPatterns,
-  generateRecommendation,
-} from "@/lib/engines";
+import { analyzeGame } from "@/lib/analyzeGame";
 import { joyColor, riskColor } from "@/lib/colorUtils";
 import PatternBadge from "@/components/PatternBadge";
 import RiskBreakdownBar from "@/components/RiskBreakdownBar";
@@ -38,10 +33,7 @@ export default async function GameDetailPage({ params }: Props) {
   const game = mockGameLibrary.find((g) => g.id === id);
   if (!game) notFound();
 
-  const designRiskScore = calculateDesignRiskScore(game);
-  const joyIndex = calculateJoyIndex(game, designRiskScore);
-  const detectedPatterns = detectHabitPatterns(game);
-  const recommendation = generateRecommendation(designRiskScore, joyIndex);
+  const { designRiskScore, joyIndex, detectedPatterns, recommendation } = analyzeGame(game);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">

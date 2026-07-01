@@ -3,26 +3,13 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { mockGameLibrary } from "@/lib/data";
-import {
-  calculateDesignRiskScore,
-  calculateJoyIndex,
-  detectHabitPatterns,
-  generateRecommendation,
-  defaultProfile,
-} from "@/lib/engines";
+import { defaultProfile } from "@/lib/engines";
+import { analyzeGame } from "@/lib/analyzeGame";
 import { recommendGames } from "@/lib/recommend";
 import { getPreferences, PREFERENCES_CHANGED_EVENT } from "@/lib/userLibrary";
 import { riskColor, joyColor } from "@/lib/colorUtils";
 import GameCover from "./GameCover";
-import type { AnalyzedGame, Game, PreferenceProfile } from "@/lib/types";
-
-function analyze(game: Game): AnalyzedGame {
-  const designRiskScore = calculateDesignRiskScore(game);
-  const joyIndex = calculateJoyIndex(game, designRiskScore);
-  const detectedPatterns = detectHabitPatterns(game);
-  const recommendation = generateRecommendation(designRiskScore, joyIndex);
-  return { ...game, designRiskScore, joyIndex, detectedPatterns, recommendation };
-}
+import type { AnalyzedGame, PreferenceProfile } from "@/lib/types";
 
 interface Props {
   library: AnalyzedGame[];
@@ -45,7 +32,7 @@ export default function RecommendedGames({ library, hasRealLibrary }: Props) {
     };
   }, []);
 
-  const catalog = useMemo(() => mockGameLibrary.map(analyze), []);
+  const catalog = useMemo(() => mockGameLibrary.map(analyzeGame), []);
 
   const recs = useMemo(
     () => recommendGames(library, catalog, profile, hasRealLibrary),
