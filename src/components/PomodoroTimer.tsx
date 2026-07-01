@@ -75,8 +75,26 @@ export default function PomodoroTimer() {
           setRunning(false);
           if (mode === "focus") {
             setSessions((n) => n + 1);
+            try {
+              const entry = { ts: Date.now(), mode: "focus", minutes: MODES.focus.minutes };
+              const raw = localStorage.getItem("tranquil-sessions");
+              const hist: typeof entry[] = raw ? JSON.parse(raw) : [];
+              hist.unshift(entry);
+              if (hist.length > 500) hist.length = 500;
+              localStorage.setItem("tranquil-sessions", JSON.stringify(hist));
+              document.dispatchEvent(new CustomEvent("tranquil-session-saved"));
+            } catch {}
             sendNotification("Focus session complete! Time for a break.");
           } else {
+            try {
+              const entry = { ts: Date.now(), mode, minutes: MODES[mode].minutes };
+              const raw = localStorage.getItem("tranquil-sessions");
+              const hist: typeof entry[] = raw ? JSON.parse(raw) : [];
+              hist.unshift(entry);
+              if (hist.length > 500) hist.length = 500;
+              localStorage.setItem("tranquil-sessions", JSON.stringify(hist));
+              document.dispatchEvent(new CustomEvent("tranquil-session-saved"));
+            } catch {}
             sendNotification("Break over — ready to focus again?");
           }
           return MODES[mode].minutes * 60;

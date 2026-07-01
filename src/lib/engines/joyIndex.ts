@@ -1,8 +1,8 @@
-import type { Game, PredatoryScore, JoyIndex, JoyLabel } from "../types";
+import type { Game, DesignRiskScore, JoyIndex, JoyLabel } from "../types";
 
-// Joy = genuine enjoyment measured against community sentiment and predatory penalty.
-// communityScore contributes up to 80 points; predatory mechanics reduce it by up to 30%.
-export function calculateJoyIndex(game: Game, predatoryScore: PredatoryScore): JoyIndex {
+// Joy = genuine enjoyment measured against community sentiment and design risk penalty.
+// communityScore contributes up to 80 points; design risk reduces it by up to 30%.
+export function calculateJoyIndex(game: Game, predatoryScore: DesignRiskScore): JoyIndex {
   const base = game.communityScore * 0.8;
   const penalty = predatoryScore.total * 0.3;
   const total = Math.max(0, Math.min(100, Math.round(base - penalty)));

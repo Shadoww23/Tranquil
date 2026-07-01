@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { generateRecommendation } from "../recommendations";
-import type { PredatoryScore, JoyIndex } from "../../types";
+import type { DesignRiskScore, JoyIndex } from "../../types";
 
-function makeScore(total: number): PredatoryScore {
+function makeScore(total: number): DesignRiskScore {
   return { total, breakdown: { monetization: 0, manipulation: 0, compulsion: 0 }, flags: [] };
 }
 
