@@ -4,9 +4,9 @@ import {
   CURATED_APPIDS,
   appIdToCoverColor,
   emptMechanics,
-  inferMechanicsFromSteamData,
   type SteamAppData,
 } from "./steamInference";
+import { mechanicsForSteamApp } from "./verifiedMechanics";
 
 interface SteamOwnedGame {
   appid: number;
@@ -125,7 +125,7 @@ async function processGame(sg: SteamOwnedGame): Promise<Game> {
       const detailRes = await fetch(`/api/steam/appdetails?appid=${sg.appid}`);
       if (detailRes.ok) {
         const detail: SteamAppData = await detailRes.json();
-        mechanics = inferMechanicsFromSteamData(detail);
+        mechanics = mechanicsForSteamApp(sg.appid, detail);
         genres = (detail.genres ?? []).map((g) => g.description).slice(0, 2);
         developer = (detail.developers ?? ["Unknown"])[0];
         publisher = (detail.publishers ?? [developer])[0];

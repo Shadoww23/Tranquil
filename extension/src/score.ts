@@ -6,7 +6,8 @@
 // improvement to the scoring engine takes effect immediately for every cached
 // game, with no network round-trip and no stale numbers.
 
-import { inferMechanicsFromSteamData, type SteamAppData } from "../../src/lib/steamInference";
+import type { SteamAppData } from "../../src/lib/steamInference";
+import { mechanicsForSteamApp } from "../../src/lib/verifiedMechanics";
 import {
   calculateDesignRiskScore,
   calculateJoyIndex,
@@ -100,7 +101,7 @@ async function getAppData(appid: string): Promise<SteamAppData | null> {
 }
 
 function toGame(appid: string, data: SteamAppData): Game {
-  const mechanics = inferMechanicsFromSteamData(data);
+  const mechanics = mechanicsForSteamApp(Number(appid), data);
   const communityScore = data.metacritic?.score ?? (data.is_free ? 68 : 72);
   return {
     id: `steam-${appid}`,
