@@ -35,3 +35,4 @@ Thumbs.db
 
 # browser extension build output
 /extension/dist/
+/tranquil-steam-extension.zip
