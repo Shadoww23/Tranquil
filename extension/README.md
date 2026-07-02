@@ -36,6 +36,9 @@ Reload the extension (the ↻ on the extensions page) after each rebuild.
 
 ## Roadmap
 
+- **Publish to the Chrome Web Store** so users can install in one click instead
+  of loading unpacked. One-time ~$5 developer registration + a review
+  submission; needs store icons and listing copy. (Deferred — revisit later.)
 - Library / wishlist / search-result badges.
 - Sync the user's "For you" preference profile from the web app.
 - Firefox packaging (MV3-compatible).
