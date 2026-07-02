@@ -8,14 +8,16 @@
 import { scoreApp } from "./score";
 import { buildBadge, BADGE_CLASS, BADGE_MARK } from "./ui";
 
-// Clickable Steam capsules that represent a single app.
+// Clickable Steam capsules that represent a single *game* tile. Kept to known
+// game-capsule classes on purpose: a broad "any link to /app/" match also grabs
+// event/announcement cards and media links, which we don't want to badge.
 const TILE_SELECTOR = [
-  "a.search_result_row",
-  "a.tab_item",
-  "a.store_capsule",
-  "a.dailydeal",
-  "a.wishlist_row",
-  "a.Focusable[href*='/app/']",
+  "a.search_result_row", // search results
+  "a.tab_item", // front-page / category tabs
+  "a.store_capsule", // capsule grids
+  "a.dailydeal", // featured deals
+  "a.wishlist_row", // wishlist rows
+  "a.similar_grid_capsule", // "More like this" on app pages
 ].join(",");
 
 function appidOf(tile: HTMLElement): string | null {

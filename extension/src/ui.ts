@@ -130,8 +130,8 @@ export function buildBadge(scored: Scored): HTMLElement {
   const verdict = VERDICT_META[scored.rec.verdict];
   const badge = el(
     "div",
-    `position:absolute;top:6px;right:6px;z-index:5;display:flex;gap:5px;align-items:center;
-     padding:3px 7px;border-radius:999px;pointer-events:auto;
+    `position:absolute;top:6px;right:6px;z-index:5;display:flex;flex-wrap:nowrap;gap:5px;
+     align-items:center;white-space:nowrap;padding:3px 7px;border-radius:999px;pointer-events:auto;
      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11px;font-weight:700;
      line-height:1;background:rgba(23,26,33,0.92);border:1px solid #2a475e;box-shadow:0 1px 4px rgba(0,0,0,0.4);`
   );
