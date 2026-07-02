@@ -14,6 +14,9 @@ import type { DesignRiskScore, Game, JoyIndex, Recommendation } from "../../src/
 
 const CARD_ID = "tranquil-card";
 
+// Where the "Open Tranquil" link points. Update if the app is hosted elsewhere.
+const SITE_URL = "https://tranquil.vercel.app";
+
 function getAppId(): string | null {
   const m = location.pathname.match(/\/app\/(\d+)/);
   return m ? m[1] : null;
@@ -130,13 +133,14 @@ function buildCard(risk: DesignRiskScore, joy: JoyIndex, rec: Recommendation): H
   if (factors.length > 0) {
     const list = el("div", "display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;");
     for (const f of factors) {
-      list.append(
-        el(
-          "span",
-          "font-size:11px;padding:3px 8px;border-radius:999px;background:#2a475e;color:#c7d5e0;",
-          `${f.label} +${f.points}`
-        )
+      const chip = el(
+        "span",
+        "font-size:11px;padding:3px 8px;border-radius:999px;background:#2a475e;color:#c7d5e0;cursor:help;",
+        `${f.label} +${f.points}`
       );
+      // The "why" behind each factor, on hover — mirrors the web app's factor list.
+      if (f.reason) chip.title = f.reason;
+      list.append(chip);
     }
     card.append(list);
   } else {
@@ -144,6 +148,23 @@ function buildCard(risk: DesignRiskScore, joy: JoyIndex, rec: Recommendation): H
       el("div", "font-size:12px;color:#8ba0b2;margin-top:2px;", "No concern patterns detected.")
     );
   }
+
+  // Footer: link back to the web app.
+  const footer = el(
+    "div",
+    "display:flex;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #2a475e;"
+  );
+  const link = document.createElement("a");
+  link.setAttribute(
+    "style",
+    "margin-left:auto;font-size:11px;font-weight:600;color:#8b5cf6;text-decoration:none;"
+  );
+  link.href = SITE_URL;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "Open Tranquil ↗";
+  footer.append(link);
+  card.append(footer);
 
   return card;
 }
