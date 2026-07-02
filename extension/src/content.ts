@@ -15,7 +15,7 @@ import type { DesignRiskScore, Game, JoyIndex, Recommendation } from "../../src/
 const CARD_ID = "tranquil-card";
 
 // Where the "Open Tranquil" link points. Update if the app is hosted elsewhere.
-const SITE_URL = "https://tranquil.vercel.app";
+const SITE_URL = "https://tranquil-tq3i.vercel.app";
 
 function getAppId(): string | null {
   const m = location.pathname.match(/\/app\/(\d+)/);
