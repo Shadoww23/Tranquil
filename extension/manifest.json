@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Tranquil for Steam",
-  "version": "0.1.0",
-  "description": "Overlays Tranquil's Design Risk and Joy scores on Steam store pages, so you know what you're playing before you buy.",
+  "version": "0.2.0",
+  "description": "Overlays Tranquil's Design Risk and Joy scores on Steam store and browse pages, so you know what you're playing before you buy.",
+  "permissions": ["storage"],
   "content_scripts": [
     {
-      "matches": ["https://store.steampowered.com/app/*"],
+      "matches": ["https://store.steampowered.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
